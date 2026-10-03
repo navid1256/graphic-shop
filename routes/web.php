@@ -14,4 +14,4 @@ Route::get('admin', function () {
 
 Route::get('admin/users', function () {
     return view('admin.users.index');
-});
+})->name('admin.users');
