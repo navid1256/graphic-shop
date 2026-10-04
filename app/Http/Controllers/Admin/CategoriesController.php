@@ -17,7 +17,7 @@ class CategoriesController extends Controller
 
     public function all()
     {
-        $categories = Category::all();
+        $categories = Category::paginate(5);
         return view('admin.categories.all', compact('categories'));
     }
 
@@ -26,7 +26,7 @@ class CategoriesController extends Controller
         $validated = $request->validated();
 
         Category::create($validated);
-        
+
         Session::flash('success', 'دسته بندی با موفقیت ایجاد شد.');
 
         return to_route('admin.categories.create');
