@@ -13,8 +13,23 @@ class AdminCategoryCreatePageTest extends TestCase
     {
         $this->get('/admin/categories/create')
             ->assertOk()
-            ->assertViewIs('admin.category.create')
+            ->assertViewIs('admin.categories.create')
             ->assertSee('دسته بندی ها / افزودن');
+    }
+
+    public function test_category_validation_errors_are_displayed_in_persian(): void
+    {
+        $this->from(route('admin.categories.create'))
+            ->post(route('admin.categories.store'), [
+                'title' => '',
+                'slug' => '',
+            ])
+            ->assertRedirect(route('admin.categories.create'))
+            ->assertSessionHasErrors(['title', 'slug']);
+
+        $this->get(route('admin.categories.create'))
+            ->assertSee('فیلد عنوان الزامی است.')
+            ->assertSee('فیلد نامک الزامی است.');
     }
 
     public function test_category_form_saves_title_and_slug(): void
