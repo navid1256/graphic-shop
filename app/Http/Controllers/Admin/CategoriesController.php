@@ -12,7 +12,13 @@ class CategoriesController extends Controller
 {
     public function create()
     {
-        return view('admin.category.create');
+        return view('admin.categories.create');
+    }
+
+    public function all()
+    {
+        $categories = Category::all();
+        return view('admin.categories.all', compact('categories'));
     }
 
     public function store(StoreRequest $request)
@@ -20,9 +26,7 @@ class CategoriesController extends Controller
         $validated = $request->validated();
 
         Category::create($validated);
-        if (!$validated) {
-            Session::flash('failed', 'دسته بندی ایجاد نشد. لطفا دوباره تلاش کنید.');
-        }
+        
         Session::flash('success', 'دسته بندی با موفقیت ایجاد شد.');
 
         return to_route('admin.categories.create');
