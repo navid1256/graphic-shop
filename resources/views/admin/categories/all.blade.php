@@ -11,7 +11,7 @@
                         <h1 class="m-0 text-dark">
                             <a class="nav-link drawer" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
                             دسته بندی ها
-                            <a class="btn btn-primary float-left text-white py-2 px-4" href="category-add.php">افزودن دسته بندی جدید</a>
+                            <a class="btn btn-primary float-left text-white py-2 px-4" href="{{ route('admin.categories.create') }}">افزودن دسته بندی جدید</a>
                         </h1>
                     </div><!-- /.col -->
                 </div><!-- /.row -->
@@ -56,22 +56,15 @@
                                                 <td>{{ $category->title }}</td>
                                                 <td>{{ $category->created_at->format('d F Y') }}</td>
                                                 <td>
-                                                    <a href="#" class="btn btn-default btn-icons"><i class="fa fa-edit"></i></a>
-                                                    <a href="#" class="btn btn-default btn-icons"><i class="fa fa-trash"></i></a>
+                                                    <a href="{{ route('admin.categories.edit', $category->id) }}" class="btn btn-default btn-icons"><i class="fa fa-edit"></i></a>
+                                                    <form action="{{ route('admin.categories.delete', $category->id) }}" method="POST" style="display: inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-default btn-icons"><i class="fa fa-trash"></i></button>
+                                                    </form>
                                                 </td>
                                             </tr>
                                         @endforeach
-
-                                        <tr>
-                                            <td>۱۸۳</td>
-                                            <td>php</td>
-                                            <td>پی اچ پی</td>
-                                            <td>۲۵ مرداد ۱۴۰۰</td>
-                                            <td>
-                                                <a href="#" class="btn btn-default btn-icons"><i class="fa fa-edit"></i></a>
-                                                <a href="#" class="btn btn-default btn-icons"><i class="fa fa-trash"></i></a>
-                                            </td>
-                                        </tr>
 
                                     </tbody>
                                 </table>

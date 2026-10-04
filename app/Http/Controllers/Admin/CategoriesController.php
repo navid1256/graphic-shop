@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Session;
 use App\Models\Category;
 use App\Http\Requests\Admin\Categories\StoreRequest;
+use App\Http\Requests\Admin\Categories\UpdateRequest;
 
 class CategoriesController extends Controller
 {
@@ -30,5 +31,31 @@ class CategoriesController extends Controller
         Session::flash('success', 'دسته بندی با موفقیت ایجاد شد.');
 
         return to_route('admin.categories.create');
+    }
+
+    public function delete($category_id)
+    {
+        $category = Category::findOrFail($category_id);
+        $category->delete();
+
+        Session::flash('success', 'دسته بندی با موفقیت حذف شد.');
+
+        return to_route('admin.categories.all');
+    }
+
+    public function edit($category_id)
+    {
+        $category = Category::findOrFail($category_id);
+        return view('admin.categories.edit', compact('category'));
+    }
+
+    public function update(UpdateRequest $request, $category_id)
+    {
+        $category = Category::findOrFail($category_id);
+        $category->update($request->validated());
+
+        Session::flash('success', 'دسته بندی با موفقیت بروزرسانی شد.');
+
+        return to_route('admin.categories.edit', $category_id);
     }
 }

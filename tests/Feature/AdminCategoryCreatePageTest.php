@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\Category;
 use Tests\TestCase;
 
 class AdminCategoryCreatePageTest extends TestCase
@@ -42,6 +43,51 @@ class AdminCategoryCreatePageTest extends TestCase
         $this->assertDatabaseHas('categories', [
             'title' => 'Illustrations',
             'slug' => 'illustrations',
+        ]);
+    }
+
+    public function test_category_update_rejects_title_and_slug_used_by_another_category(): void
+    {
+        Category::create([
+            'title' => 'Existing title',
+            'slug' => 'existing-slug',
+        ]);
+        $category = Category::create([
+            'title' => 'Current title',
+            'slug' => 'current-slug',
+        ]);
+
+        $this->from(route('admin.categories.edit', $category->id))
+            ->put(route('admin.categories.update', $category->id), [
+                'title' => 'Existing title',
+                'slug' => 'existing-slug',
+            ])
+            ->assertRedirect(route('admin.categories.edit', $category->id))
+            ->assertSessionHasErrors(['title', 'slug']);
+
+        $this->assertDatabaseHas('categories', [
+            'id' => $category->id,
+            'title' => 'Current title',
+            'slug' => 'current-slug',
+        ]);
+    }
+
+    public function test_category_update_allows_its_existing_title_and_slug(): void
+    {
+        $category = Category::create([
+            'title' => 'Current title',
+            'slug' => 'current-slug',
+        ]);
+
+        $this->put(route('admin.categories.update', $category->id), [
+            'title' => 'Current title',
+            'slug' => 'current-slug',
+        ])->assertRedirect(route('admin.categories.all'));
+
+        $this->assertDatabaseHas('categories', [
+            'id' => $category->id,
+            'title' => 'Current title',
+            'slug' => 'current-slug',
         ]);
     }
 }
