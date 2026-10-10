@@ -11,8 +11,7 @@
                                 <i class="fa fa-bars"></i>
                             </a>
                             محصولات
-                            <a class="btn btn-primary float-left text-white py-2 px-4"
-                               href="{{ route('admin.products.create') }}">افزودن محصول جدید</a>
+                            <a class="btn btn-primary float-left text-white py-2 px-4" href="{{ route('admin.products.create') }}">افزودن محصول جدید</a>
                         </h1>
                     </div>
                 </div>
@@ -30,8 +29,7 @@
                                 <h3 class="card-title">لیست محصولات</h3>
                                 <form action="{{ route('admin.products.all') }}" method="GET" class="card-tools">
                                     <div class="input-group input-group-sm" style="width: 180px;">
-                                        <input type="search" name="search" value="{{ $search }}"
-                                               class="form-control float-right" placeholder="جستجو">
+                                        <input type="search" name="search" value="{{ $search }}" class="form-control float-right" placeholder="جستجو">
                                         <div class="input-group-append">
                                             <button type="submit" class="btn btn-default" aria-label="جستجو">
                                                 <i class="fa fa-search"></i>
@@ -63,8 +61,7 @@
                                                 <td>{{ $product->id }}</td>
                                                 <td>
                                                     @if ($product->thumbnail_url)
-                                                        <img src="{{ url('/storage/products/images/' . $product->thumbnail_url) }}"
-                                                             class="product_img" alt="" width="48" height="48" loading="lazy">
+                                                        <img src="{{ route('admin.products.thumbnail', $product->id) }}" class="product_img" alt="" width="48" height="48" loading="lazy">
                                                     @endif
                                                     {{ $product->title }}
                                                 </td>
@@ -73,9 +70,8 @@
                                                 <td>{{ \Illuminate\Support\Str::limit(strip_tags($product->description), 80) }}</td>
                                                 <td>
                                                     @if ($product->demo_url)
-                                                        <a href="{{ \Illuminate\Support\Facades\Storage::disk('product_images')->url($product->demo_url) }}"
-                                                           class="btn btn-default btn-icons" title="لینک دمو"
-                                                           target="_blank" rel="noopener noreferrer">
+                                                        <a href="{{ route('admin.products.download.demo', $product->id) }}" class="btn btn-default btn-icons" title="لینک دمو">
+                                                            
                                                             <i class="fa fa-link"></i>
                                                         </a>
                                                     @else
@@ -84,8 +80,7 @@
                                                 </td>
                                                 <td>
                                                     @if ($product->source_url)
-                                                        <a href="{{ \Illuminate\Support\Facades\Storage::disk('product_images')->url($product->source_url) }}"
-                                                           class="btn btn-default btn-icons" title="لینک دانلود">
+                                                        <a href="{{ route('admin.products.download.source', $product->id) }}" class="btn btn-default btn-icons" title="لینک دانلود">
                                                             <i class="fa fa-link"></i>
                                                         </a>
                                                     @else
@@ -95,12 +90,10 @@
                                                 <td>{{ number_format($product->price) }} تومان</td>
                                                 <td>{{ $product->created_at->format('Y-m-d') }}</td>
                                                 <td>
-                                                    <button type="button" class="btn btn-default btn-icons" disabled
-                                                            title="ویرایش هنوز پیاده‌سازی نشده" aria-label="ویرایش">
+                                                    <button type="button" class="btn btn-default btn-icons" disabled title="ویرایش هنوز پیاده‌سازی نشده" aria-label="ویرایش">
                                                         <i class="fa fa-edit"></i>
                                                     </button>
-                                                    <button type="button" class="btn btn-default btn-icons" disabled
-                                                            title="حذف هنوز پیاده‌سازی نشده" aria-label="حذف">
+                                                    <button type="button" class="btn btn-default btn-icons" disabled title="حذف هنوز پیاده‌سازی نشده" aria-label="حذف">
                                                         <i class="fa fa-trash"></i>
                                                     </button>
                                                 </td>

@@ -3,6 +3,7 @@
 namespace App\Utilities;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
@@ -22,14 +23,9 @@ class ImageUploader
                     throw new RuntimeException("The uploaded file for {$key} is invalid.");
                 }
 
-                $fileName = $key . '_' . $image->getClientOriginalName();
-                $storedPath = Storage::disk($diskType)->putFileAs($path, $image, $fileName);
-
-                if ($storedPath === false) {
-                    throw new RuntimeException("Unable to store the uploaded file for {$key}.");
-                }
-
-                $imagePaths[$key] = $storedPath;
+                $fullPath = $path . '/' . $key . '_' . $image->getClientOriginalName();
+                self::upload($image, $fullPath, $diskType);
+                $imagePaths[$key] = $fullPath;
             }
         } catch (\Throwable $exception) {
             Storage::disk($diskType)->delete(array_values($imagePaths));
@@ -38,5 +34,17 @@ class ImageUploader
         }
 
         return $imagePaths;
+    }
+
+    public static function upload(UploadedFile $image, string $path, string $diskType = 'product_images'): void
+    {
+        $stored = Storage::disk($diskType)->put(
+            $path,
+            File::get($image->getPathname())
+        );
+
+        if (!$stored) {
+            throw new RuntimeException("Unable to store the uploaded file at {$path}.");
+        }
     }
 }

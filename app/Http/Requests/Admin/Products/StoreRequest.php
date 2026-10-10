@@ -26,9 +26,10 @@ class StoreRequest extends FormRequest
             'title' => ['required', 'string', 'max:255'],
             'price' => ['required', 'numeric', 'min:0'],
             'category_id' => ['required', 'exists:categories,id'],
-            'thumbnail_url' => ['required', 'image','mimes:jpeg,png,jpg,gif,svg'],
-            'demo_url' => ['required', 'image','mimes:jpeg,png,jpg,gif,svg'],
-            'source_url' => ['required', 'image','mimes:jpeg,png,jpg,gif,svg'],
+            'owner_id' => ['required', 'exists:categories,id'],
+            'thumbnail_url' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg'],
+            'demo_url' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg'],
+            'source_url' => ['required', 'image', 'mimes:jpeg,png,jpg,gif,svg'],
             'description' => ['required', 'string'],
         ];
     }

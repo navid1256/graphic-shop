@@ -9,6 +9,7 @@ use App\Models\Category;
 use App\Models\User;
 use App\Utilities\ImageUploader;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Storage;
 
 class ProductsController extends Controller
 {
@@ -62,11 +63,50 @@ class ProductsController extends Controller
                 'source_url' => $imagePaths['source_url'],
             ]);
 
-            session()->flash('success', 'محصول با موفقیت ایجاد شد.');
-
-            return response()->redirectToRoute('admin.products.all');
+            return to_route('admin.products.create')
+                ->with('success', 'محصول با موفقیت ایجاد شد.');
         } catch (\Exception $e) {
             return back()->withErrors(['image_upload' => 'خطا در آپلود تصاویر: ' . $e->getMessage()]);
         }
+    }
+
+    public function downloadDemo($product_id)
+    {
+        $product = Product::findOrFail($product_id);
+        $demoFilePath = $product->demo_url;
+
+        if (!$demoFilePath || !Storage::disk('product_images')->exists($demoFilePath)) {
+            abort(404, 'Demo file not found.');
+        }
+
+        return response()->download(
+            Storage::disk('product_images')->path($demoFilePath),
+            basename($demoFilePath)
+        );
+    }
+
+    public function downloadSource($product_id)
+    {
+        $product = Product::findOrFail($product_id);
+        $sourceFilePath = $product->source_url;
+
+        if (!$sourceFilePath || !Storage::disk('product_images')->exists($sourceFilePath)) {
+            abort(404, 'Source file not found.');
+        }
+
+        return response()->download(
+            Storage::disk('product_images')->path($sourceFilePath),
+            basename($sourceFilePath)
+        );
+    }
+
+    public function thumbnail($product_id)
+    {
+        $product = Product::findOrFail($product_id);
+        $thumbnailPath = $product->thumbnail_url;
+
+        abort_unless($thumbnailPath && Storage::disk('product_images')->exists($thumbnailPath), 404);
+
+        return response()->file(Storage::disk('product_images')->path($thumbnailPath));
     }
 }
