@@ -23,7 +23,7 @@ class ImageUploader
                     throw new RuntimeException("The uploaded file for {$key} is invalid.");
                 }
 
-                $fullPath = $path . '/' . $key . '_' . $image->getClientOriginalName();
+                $fullPath = $path . '/' . $key . '_' . $image->hashName();
                 self::upload($image, $fullPath, $diskType);
                 $imagePaths[$key] = $fullPath;
             }

@@ -71,7 +71,7 @@
                                                 <td>
                                                     @if ($product->demo_url)
                                                         <a href="{{ route('admin.products.download.demo', $product->id) }}" class="btn btn-default btn-icons" title="لینک دمو">
-                                                            
+
                                                             <i class="fa fa-link"></i>
                                                         </a>
                                                     @else
@@ -90,12 +90,19 @@
                                                 <td>{{ number_format($product->price) }} تومان</td>
                                                 <td>{{ $product->created_at->format('Y-m-d') }}</td>
                                                 <td>
-                                                    <button type="button" class="btn btn-default btn-icons" disabled title="ویرایش هنوز پیاده‌سازی نشده" aria-label="ویرایش">
+
+                                                    <a href="{{ route('admin.products.edit', $product->id) }}" class="btn btn-default btn-icons" aria-label="ویرایش">
                                                         <i class="fa fa-edit"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-default btn-icons" disabled title="حذف هنوز پیاده‌سازی نشده" aria-label="حذف">
-                                                        <i class="fa fa-trash"></i>
-                                                    </button>
+                                                    </a>
+
+                                                    <form action="{{ route('admin.products.delete', $product->id) }}" method="post">
+                                                        @csrf
+                                                        @method('delete')
+                                                        <button type="submit" class="btn btn-default btn-icons" aria-label="حذف">
+                                                            <i class="fa fa-trash"></i>
+                                                        </button>
+                                                    </form>
+
                                                 </td>
                                             </tr>
                                         @empty
