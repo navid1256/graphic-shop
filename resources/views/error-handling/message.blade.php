@@ -1,7 +1,7 @@
-@if (session('failed'))
-    <div class = "alert alert-danger">{{ session('failed') }}</div>
+@if (session('error') || session('failed'))
+    <div class="alert alert-danger">{{ session('error') ?? session('failed') }}</div>
 @elseif (session('success'))
-    <div class = "alert alert-success">{{ session('success') }}</div>
+    <div class="alert alert-success">{{ session('success') }}</div>
 @endif
 
 @if ($errors->any())

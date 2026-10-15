@@ -11,7 +11,7 @@
                         <h1 class="m-0 text-dark">
                             <a class="nav-link drawer" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
                             کاربران
-                            <a class="btn btn-primary float-left text-white py-2 px-4" href="users-add.php">افزودن کاربر جدید</a>
+                            <a class="btn btn-primary float-left text-white py-2 px-4" href="{{ route('admin.users.create') }}">افزودن کاربر جدید</a>
                         </h1>
                     </div><!-- /.col -->
                 </div><!-- /.row -->
@@ -23,6 +23,7 @@
         <!-- Main content -->
         <div class="content">
             <div class="container-fluid">
+                @include('error-handling.message')
                 <div class="row">
                     <div class="col-12">
                         <div class="card">
@@ -42,7 +43,7 @@
                             <!-- /.card-header -->
                             <div class="table table-striped table-valign-middle mb-0">
                                 <table class="table table-hover mb-0">
-                                    <tbody>
+                                    <thead>
                                         <tr>
                                             <th>آیدی</th>
                                             <th>نام و نام خانوادگی</th>
@@ -52,8 +53,10 @@
                                             <th>تاریخ عضویت</th>
                                             <th>عملیات</th>
                                         </tr>
-                                        <tr>
-                                            @foreach ($users as $user)
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($users as $user)
+                                            <tr>
                                                 <td>{{ $user->id }}</td>
                                                 <td>{{ $user->name }}</td>
                                                 <td>{{ $user->email }}</td>
@@ -61,14 +64,15 @@
                                                 <td>{{ $user->role == 'admin' ? 'ادمین' : 'کاربر عادی' }}</td>
                                                 <td>{{ $user->created_at }}</td>
                                                 <td>
-                                            @endforeach
-
-                                            <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-default btn-icons"><i class="fa fa-edit"></i></a>
-                                            
-                                            <a href="{{ route('admin.users.delete', $user->id) }}" class="btn btn-default btn-icons"><i class="fa fa-trash"></i></a>
-                                            </td>
-                                        </tr>
-
+                                                    <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-default btn-icons"><i class="fa fa-edit"></i></a>
+                                                    <form action="{{ route('admin.users.delete', $user->id) }}" method="POST" style="display: inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-default btn-icons"><i class="fa fa-trash"></i></button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -76,13 +80,7 @@
                         </div>
                         <!-- /.card -->
                         <div class="d-flex justify-content-center">
-                            <ul class="pagination mt-3">
-                                <li class="page-item"><a class="page-link" href="#">«</a></li>
-                                <li class="page-item"><a class="page-link" href="#">۱</a></li>
-                                <li class="page-item"><a class="page-link" href="#">۲</a></li>
-                                <li class="page-item"><a class="page-link" href="#">۳</a></li>
-                                <li class="page-item"><a class="page-link" href="#">»</a></li>
-                            </ul>
+                            {{ $users->links() }}
                         </div>
                     </div>
                 </div>
