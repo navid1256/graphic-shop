@@ -13,10 +13,6 @@ Route::get('password', function () {
     return password_hash('admin', PASSWORD_DEFAULT);
 })->name('admin.password');
 
-Route::get('admin/users', function () {
-    return view('admin.users.index');
-})->name('admin.users');
-
 Route::prefix('admin')->group(function () {
     Route::prefix('categories')->group(function () {
         Route::get('create', [CategoriesController::class, 'create'])->name('admin.categories.create');
@@ -39,5 +35,14 @@ Route::prefix('admin')->group(function () {
         Route::get('{product_id}/thumbnail', [ProductsController::class, 'thumbnail'])->name('admin.products.thumbnail');
         Route::get('{product_id}/download/demo', [ProductsController::class, 'downloadDemo'])->name('admin.products.download.demo');
         Route::get('{product_id}/download/source', [ProductsController::class, 'downloadSource'])->name('admin.products.download.source');
+    });
+
+    Route::prefix('users')->group(function () {
+        Route::get('', [\App\Http\Controllers\Admin\UsersController::class, 'all'])->name('admin.users.all');
+        Route::get('create', [\App\Http\Controllers\Admin\UsersController::class, 'create'])->name('admin.users.create');
+        Route::post('', [\App\Http\Controllers\Admin\UsersController::class, 'store'])->name('admin.users.store');
+        Route::get('{user_id}/edit', [\App\Http\Controllers\Admin\UsersController::class, 'edit'])->name('admin.users.edit');
+        Route::put('{user_id}/update', [\App\Http\Controllers\Admin\UsersController::class, 'update'])->name('admin.users.update');
+        Route::delete('{user_id}/delete', [\App\Http\Controllers\Admin\UsersController::class, 'delete'])->name('admin.users.delete');
     });
 });
