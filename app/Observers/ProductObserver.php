@@ -47,7 +47,9 @@ class ProductObserver
                     return;
                 }
 
-                if (! Storage::disk('product_images')->delete($pathsToDelete)) {
+                $deleted = Storage::disk('product_images')->delete($pathsToDelete);
+
+                if (! $deleted) {
                     Log::warning('Could not delete replaced product images.', [
                         'product_id' => $productId,
                         'paths' => $pathsToDelete,
