@@ -41,6 +41,19 @@ class FrontendProductPagesTest extends TestCase
         );
     }
 
+    public function test_product_listing_search_filters_products_by_title(): void
+    {
+        $this->createProduct('Unique Search Result');
+        $this->createProduct('Different Product');
+
+        $this->get(route('frontend.products.all', ['search' => 'Unique']))
+            ->assertOk()
+            ->assertSee('Unique Search Result')
+            ->assertDontSee('Different Product')
+            ->assertSee('name="search"', false)
+            ->assertSee('value="Unique"', false);
+    }
+
     public function test_product_detail_page_shows_the_selected_product_data(): void
     {
         $product = $this->createProduct('Selected Product');

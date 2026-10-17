@@ -5,15 +5,23 @@ namespace App\Http\Controllers\Home;
 use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
+use Illuminate\Http\Request;
 
 class ProductsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::all();
-        $products = Product::latest()->get();
+        $search = trim((string) $request->query('search', ''));
+        $productQuery = Product::latest();
 
-        return view('frontend.products.all', compact('categories', 'products'));
+        if ($search !== '') {
+            $productQuery->where('title', 'like', '%'.$search.'%');
+        }
+
+        $categories = Category::all();
+        $products = $productQuery->get();
+
+        return view('frontend.products.all', compact('categories', 'products', 'search'));
     }
 
     public function show($product_id)
