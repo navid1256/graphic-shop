@@ -45,4 +45,8 @@ Route::prefix('admin')->group(function () {
     Route::prefix('orders')->group(function () {
         Route::get('', [\App\Http\Controllers\Admin\OrdersController::class, 'all'])->name('admin.orders.all');
     });
+
+    Route::prefix('payments')->group(function () {
+        Route::get('', [\App\Http\Controllers\Admin\PaymentsController::class, 'all'])->name('admin.payments.all');
+    });
 });
