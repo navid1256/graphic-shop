@@ -270,6 +270,15 @@
     [ Show modal1 ]*/
     $('.js-show-modal1').on('click',function(e){
         e.preventDefault();
+        var product = $(this);
+
+        $('.js-quick-view-title').text(product.data('product-title'));
+        $('.js-quick-view-price').text(product.data('product-price'));
+        $('.js-quick-view-description').text(product.data('product-description'));
+        $('.js-quick-view-image')
+            .attr('src', product.data('product-image'))
+            .attr('alt', product.data('product-title'));
+        $('.js-quick-view-link').attr('href', product.attr('href'));
         $('.js-modal1').addClass('show-modal1');
     });
 

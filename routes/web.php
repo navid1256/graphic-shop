@@ -4,12 +4,17 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoriesController;
 use App\Http\Controllers\Admin\ProductsController;
+use App\Http\Controllers\Home\HomeController;
+use App\Http\Controllers\Admin\UsersController;
+use App\Http\Controllers\Home\ProductsController as HomeProductsController;
 
-Route::get('', function () {
-    return view('frontend.products.all');
+Route::prefix('')->group(function () {
+    Route::get('', [HomeProductsController::class, 'index'])->name('frontend.products.all');
+    Route::get('product/{product_id}', [HomeProductsController::class, 'show'])->name('frontend.products.show');
 });
 
 Route::prefix('admin')->group(function () {
+    Route::view('', 'admin.index')->name('admin.dashboard');
     Route::prefix('categories')->group(function () {
         Route::get('create', [CategoriesController::class, 'create'])->name('admin.categories.create');
         Route::get('', [CategoriesController::class, 'all'])->name('admin.categories.all');
@@ -34,12 +39,12 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::prefix('users')->group(function () {
-        Route::get('', [\App\Http\Controllers\Admin\UsersController::class, 'all'])->name('admin.users.all');
-        Route::get('create', [\App\Http\Controllers\Admin\UsersController::class, 'create'])->name('admin.users.create');
-        Route::post('', [\App\Http\Controllers\Admin\UsersController::class, 'store'])->name('admin.users.store');
-        Route::get('{user_id}/edit', [\App\Http\Controllers\Admin\UsersController::class, 'edit'])->name('admin.users.edit');
-        Route::put('{user_id}/update', [\App\Http\Controllers\Admin\UsersController::class, 'update'])->name('admin.users.update');
-        Route::delete('{user_id}/delete', [\App\Http\Controllers\Admin\UsersController::class, 'delete'])->name('admin.users.delete');
+        Route::get('', [UsersController::class, 'all'])->name('admin.users.all');
+        Route::get('create', [UsersController::class, 'create'])->name('admin.users.create');
+        Route::post('', [UsersController::class, 'store'])->name('admin.users.store');
+        Route::get('{user_id}/edit', [UsersController::class, 'edit'])->name('admin.users.edit');
+        Route::put('{user_id}/update', [UsersController::class, 'update'])->name('admin.users.update');
+        Route::delete('{user_id}/delete', [UsersController::class, 'delete'])->name('admin.users.delete');
     });
 
     Route::prefix('orders')->group(function () {
