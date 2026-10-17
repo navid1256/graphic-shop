@@ -14,7 +14,8 @@ class FrontendProductPagesTest extends TestCase
 
     public function test_product_listing_links_each_product_to_its_detail_page(): void
     {
-        $product = $this->createProduct('Dynamic Product');
+        $category = Category::create(['title' => 'Designs', 'slug' => 'designs']);
+        $product = $this->createProduct('Dynamic Product', $category);
 
         $response = $this->get(route('frontend.products.all'));
 
@@ -22,6 +23,8 @@ class FrontendProductPagesTest extends TestCase
             ->assertOk()
             ->assertViewIs('frontend.products.all')
             ->assertSee('Dynamic Product')
+            ->assertSee('Designs')
+            ->assertViewHas('categories', fn ($categories) => $categories->modelKeys() === [$category->id])
             ->assertSee('مشاهده سریع')
             ->assertSee('js-show-modal1', false)
             ->assertSee('class="wrap-modal1 js-modal1', false)

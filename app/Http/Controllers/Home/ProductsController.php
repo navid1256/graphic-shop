@@ -3,15 +3,17 @@
 namespace App\Http\Controllers\Home;
 
 use App\Http\Controllers\Controller;
+use App\Models\Category;
 use App\Models\Product;
 
 class ProductsController extends Controller
 {
     public function index()
     {
+        $categories = Category::all();
         $products = Product::latest()->get();
 
-        return view('frontend.products.all', compact('products'));
+        return view('frontend.products.all', compact('categories', 'products'));
     }
 
     public function show($product_id)
