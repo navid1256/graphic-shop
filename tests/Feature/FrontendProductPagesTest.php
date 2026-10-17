@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Category;
+use App\Models\Order;
+use App\Models\OrderItem;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,6 +54,80 @@ class FrontendProductPagesTest extends TestCase
             ->assertDontSee('Different Product')
             ->assertSee('name="search"', false)
             ->assertSee('value="Unique"', false);
+    }
+
+    public function test_default_product_sort_returns_all_products_without_reordering(): void
+    {
+        $firstProduct = $this->createProduct('First Product');
+        $secondProduct = $this->createProduct('Second Product');
+
+        $this->get(route('frontend.products.all'))
+            ->assertOk()
+            ->assertViewHas('products', fn ($products) => $products->modelKeys() === [
+                $firstProduct->id,
+                $secondProduct->id,
+            ]);
+    }
+
+    public function test_latest_product_sort_orders_by_created_at_descending(): void
+    {
+        $olderProduct = $this->createProduct('Older Product');
+        $newerProduct = $this->createProduct('Newer Product');
+        $olderProduct->forceFill([
+            'created_at' => now()->subDay(),
+        ])->save();
+
+        $this->get(route('frontend.products.all', ['sort' => 'latest']))
+            ->assertOk()
+            ->assertViewHas('products', fn ($products) => $products->modelKeys() === [
+                $newerProduct->id,
+                $olderProduct->id,
+            ]);
+    }
+
+    public function test_popular_product_sort_orders_all_products_by_paid_sales(): void
+    {
+        $popularProduct = $this->createProduct('Popular Product');
+        $lessPopularProduct = $this->createProduct('Less Popular Product');
+        $unpopularProduct = $this->createProduct('Unpopular Product');
+        $user = User::factory()->create([
+            'mobile' => fake()->unique()->numerify('09#########'),
+            'role' => 'user',
+        ]);
+        $paidOrder = Order::create([
+            'amount' => 30000,
+            'status' => 'paied',
+            'user_id' => $user->id,
+        ]);
+        $unpaidOrder = Order::create([
+            'amount' => 10000,
+            'status' => 'unpaied',
+            'user_id' => $user->id,
+        ]);
+
+        foreach ([$popularProduct, $popularProduct, $lessPopularProduct] as $product) {
+            OrderItem::create([
+                'price' => $product->price,
+                'user_id' => $user->id,
+                'order_id' => $paidOrder->id,
+                'product_id' => $product->id,
+            ]);
+        }
+
+        OrderItem::create([
+            'price' => $unpopularProduct->price,
+            'user_id' => $user->id,
+            'order_id' => $unpaidOrder->id,
+            'product_id' => $unpopularProduct->id,
+        ]);
+
+        $this->get(route('frontend.products.all', ['sort' => 'popular']))
+            ->assertOk()
+            ->assertViewHas('products', fn ($products) => $products->modelKeys() === [
+                $popularProduct->id,
+                $lessPopularProduct->id,
+                $unpopularProduct->id,
+            ]);
     }
 
     public function test_product_detail_page_shows_the_selected_product_data(): void
