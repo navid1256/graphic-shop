@@ -5,13 +5,9 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\CategoriesController;
 use App\Http\Controllers\Admin\ProductsController;
 
-Route::get('admin', function () {
-    return view('admin.index');
-})->name('admin.index');
-
-Route::get('password', function () {
-    return password_hash('admin', PASSWORD_DEFAULT);
-})->name('admin.password');
+Route::get('', function () {
+    return view('frontend.products.all');
+});
 
 Route::prefix('admin')->group(function () {
     Route::prefix('categories')->group(function () {
@@ -44,5 +40,9 @@ Route::prefix('admin')->group(function () {
         Route::get('{user_id}/edit', [\App\Http\Controllers\Admin\UsersController::class, 'edit'])->name('admin.users.edit');
         Route::put('{user_id}/update', [\App\Http\Controllers\Admin\UsersController::class, 'update'])->name('admin.users.update');
         Route::delete('{user_id}/delete', [\App\Http\Controllers\Admin\UsersController::class, 'delete'])->name('admin.users.delete');
+    });
+
+    Route::prefix('orders')->group(function () {
+        Route::get('', [\App\Http\Controllers\Admin\OrdersController::class, 'all'])->name('admin.orders.all');
     });
 });
