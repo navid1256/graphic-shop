@@ -1,6 +1,10 @@
 @extends('layouts.frontend.master')
 
 @section('content')
+    @php
+        $filterParameters = request()->query();
+    @endphp
+
     <!-- Product -->
     <div class="bg0 m-t-23 p-b-140">
         <div class="container">
@@ -33,6 +37,10 @@
                 <!-- Search product -->
                 <div class="dis-none panel-search w-full p-t-10 p-b-15">
                     <form action="{{ route('frontend.products.all') }}" method="GET" class="bor8 dis-flex p-l-15">
+                        <input type="hidden" name="type" value="{{ request('type') }}">
+                        <input type="hidden" name="price" value="{{ request('price') }}">
+                        <input type="hidden" name="sort" value="{{ request('sort', 'default') }}">
+
                         <button type="submit" class="size-113 flex-c-m fs-16 cl2 hov-cl1 trans-04" aria-label="جستجو">
                             <i class="zmdi zmdi-search"></i>
                         </button>
@@ -52,13 +60,21 @@
 
                             <ul>
                                 <li class="p-b-6">
-                                    <a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+                                    <a href="{{ route('frontend.products.all', array_diff_key($filterParameters, ['type' => true])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('type') ? '' : 'filter-link-active' }}">
+                                        همه
+                                    </a>
+                                </li>
+                                <li class="p-b-6">
+                                    <a href="{{ route('frontend.products.all', array_merge($filterParameters, ['type' => 'free'])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('type') === 'free' ? 'filter-link-active' : '' }}">
                                         رایگان
                                     </a>
                                 </li>
 
                                 <li class="p-b-6">
-                                    <a href="#" class="filter-link stext-106 trans-04">
+                                    <a href="{{ route('frontend.products.all', array_merge($filterParameters, ['type' => 'paid'])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('type') === 'paid' ? 'filter-link-active' : '' }}">
                                         پولی
                                     </a>
                                 </li>
@@ -72,25 +88,29 @@
 
                             <ul>
                                 <li class="p-b-6">
-                                    <a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+                                    <a href="{{ route('frontend.products.all', array_diff_key($filterParameters, ['price' => true])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('price') ? '' : 'filter-link-active' }}">
                                         همه
                                     </a>
                                 </li>
 
                                 <li class="p-b-6">
-                                    <a href="#" class="filter-link stext-106 trans-04">
+                                    <a href="{{ route('frontend.products.all', array_merge($filterParameters, ['price' => '10-100'])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('price') === '10-100' ? 'filter-link-active' : '' }}">
                                         ۱۰ الی ۱۰۰ هزار تومان
                                     </a>
                                 </li>
 
                                 <li class="p-b-6">
-                                    <a href="#" class="filter-link stext-106 trans-04">
+                                    <a href="{{ route('frontend.products.all', array_merge($filterParameters, ['price' => '101-200'])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('price') === '101-200' ? 'filter-link-active' : '' }}">
                                         ۱۰۱ الی ۲۰۰ هزار تومان
                                     </a>
                                 </li>
 
                                 <li class="p-b-6">
-                                    <a href="#" class="filter-link stext-106 trans-04">
+                                    <a href="{{ route('frontend.products.all', array_merge($filterParameters, ['price' => '201-300'])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('price') === '201-300' ? 'filter-link-active' : '' }}">
                                         ۲۰۱ الی ۳۰۰ هزار تومان
                                     </a>
                                 </li>
@@ -104,31 +124,36 @@
 
                             <ul>
                                 <li class="p-b-6">
-                                    <a href="#" class="filter-link stext-106 trans-04">
+                                    <a href="{{ route('frontend.products.all', array_merge($filterParameters, ['sort' => 'default'])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('sort', 'default') === 'default' ? 'filter-link-active' : '' }}">
                                         پیش فرض
                                     </a>
                                 </li>
 
                                 <li class="p-b-6">
-                                    <a href="#" class="filter-link stext-106 trans-04">
+                                    <a href="{{ route('frontend.products.all', array_merge($filterParameters, ['sort' => 'popular'])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('sort') === 'popular' ? 'filter-link-active' : '' }}">
                                         محبوبیت
                                     </a>
                                 </li>
 
                                 <li class="p-b-6">
-                                    <a href="#" class="filter-link stext-106 trans-04 filter-link-active">
+                                    <a href="{{ route('frontend.products.all', array_merge($filterParameters, ['sort' => 'latest'])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('sort') === 'latest' ? 'filter-link-active' : '' }}">
                                         جدیدترین
                                     </a>
                                 </li>
 
                                 <li class="p-b-6">
-                                    <a href="#" class="filter-link stext-106 trans-04">
+                                    <a href="{{ route('frontend.products.all', array_merge($filterParameters, ['sort' => 'price_asc'])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('sort') === 'price_asc' ? 'filter-link-active' : '' }}">
                                         قیمت:‌ کم به زیاد
                                     </a>
                                 </li>
 
                                 <li class="p-b-6">
-                                    <a href="#" class="filter-link stext-106 trans-04">
+                                    <a href="{{ route('frontend.products.all', array_merge($filterParameters, ['sort' => 'price_desc'])) }}"
+                                        class="filter-link stext-106 trans-04 {{ request('sort') === 'price_desc' ? 'filter-link-active' : '' }}">
                                         قیمت:‌زیاد به کم
                                     </a>
                                 </li>

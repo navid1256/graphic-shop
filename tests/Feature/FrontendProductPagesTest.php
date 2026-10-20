@@ -56,6 +56,29 @@ class FrontendProductPagesTest extends TestCase
             ->assertSee('value="Unique"', false);
     }
 
+    public function test_filter_panel_links_preserve_other_selected_filters_and_search(): void
+    {
+        $this->createProduct('Filtered Product');
+
+        $query = [
+            'search' => 'Filtered',
+            'type' => 'paid',
+            'price' => '10-100',
+            'sort' => 'popular',
+        ];
+
+        $response = $this->get(route('frontend.products.all', $query))
+            ->assertOk()
+            ->assertSee('name="type" value="paid"', false)
+            ->assertSee('name="price" value="10-100"', false)
+            ->assertSee('name="sort" value="popular"', false);
+
+        $response
+            ->assertSee('href="'.e(route('frontend.products.all', array_merge($query, ['type' => 'free']))).'"', false)
+            ->assertSee('href="'.e(route('frontend.products.all', array_merge($query, ['price' => '101-200']))).'"', false)
+            ->assertSee('href="'.e(route('frontend.products.all', array_merge($query, ['sort' => 'price_asc']))).'"', false);
+    }
+
     public function test_default_product_sort_returns_all_products_without_reordering(): void
     {
         $firstProduct = $this->createProduct('First Product');
