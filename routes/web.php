@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\CategoriesController;
 use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Home\BascketController;
+use App\Http\Controllers\Home\CheckoutController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Home\ProductsController as HomeProductsController;
 
@@ -13,7 +14,8 @@ Route::prefix('')->group(function () {
     Route::get('', [HomeProductsController::class, 'index'])->name('frontend.products.all');
     Route::get('product/{product_id}', [HomeProductsController::class, 'show'])->name('frontend.products.show');
     Route::post('basket/add/{product_id}', [BascketController::class, 'addToBascket'])->name('frontend.basket.add');
-
+    Route::delete('basket/remove/{product_id}', [BascketController::class, 'removeFromBascket'])->name('frontend.basket.remove');
+    Route::get('checkout', [CheckoutController::class, 'show'])->name('frontend.checkout');
 });
 
 Route::prefix('admin')->group(function () {

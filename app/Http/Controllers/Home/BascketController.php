@@ -34,4 +34,20 @@ class BascketController extends Controller
         return to_route('frontend.products.show', $product->id)
             ->with('success', 'محصول به سبد خرید اضافه شد.');
     }
+
+    public function removeFromBascket(Request $request, $product_id): RedirectResponse
+    {
+        $basket = json_decode($request->cookie('basket') ?? '[]', true);
+        $basket = is_array($basket) ? $basket : [];
+
+        unset($basket[$product_id]);
+
+        Cookie::queue(
+            'basket',
+            json_encode($basket, JSON_UNESCAPED_UNICODE | JSON_THROW_ON_ERROR),
+            self::COOKIE_MINUTES
+        );
+
+        return back()->with('success', 'محصول از سبد خرید حذف شد.');
+    }
 }

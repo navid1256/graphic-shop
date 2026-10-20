@@ -88,6 +88,32 @@ class FrontendBasketHeaderTest extends TestCase
         $this->assertStringContainsString('&lt;script&gt;', $panel);
     }
 
+    public function test_each_basket_item_has_its_own_delete_form_and_accessible_icon(): void
+    {
+        $first = $this->createProduct('First design', 10000);
+        $second = $this->createProduct('Second design', 25000);
+        $response = $this->withCookie('basket', json_encode([$first->id => [], $second->id => []]))
+            ->get(route('frontend.products.all'))->assertOk();
+
+        $document = new DOMDocument;
+        @$document->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
+        $xpath = new DOMXPath($document);
+        $forms = $xpath->query('//div[@id="header-basket"]//form');
+        $this->assertCount(2, $forms);
+
+        foreach ([$first, $second] as $product) {
+            $form = $xpath->query('//form[@action="'.route('frontend.basket.remove', $product->id).'"]')->item(0);
+            $this->assertNotNull($form);
+            $this->assertSame('POST', strtoupper($form->getAttribute('method')));
+            $this->assertCount(1, $xpath->query('.//input[@name="_method" and @value="DELETE"]', $form));
+            $this->assertCount(1, $xpath->query('.//input[@name="_token"]', $form));
+            $button = $xpath->query('.//button[@type="submit"]', $form)->item(0);
+            $this->assertNotNull($button);
+            $this->assertSame('حذف '.$product->title.' از سبد خرید', $button->getAttribute('aria-label'));
+            $this->assertCount(1, $xpath->query('.//i[contains(@class, "zmdi-delete") and @aria-hidden="true"]', $button));
+        }
+    }
+
     private function assertBasketCount(TestResponse $response, int $expected): void
     {
         $document = new DOMDocument;

@@ -89,7 +89,8 @@
                             <i class="zmdi zmdi-search"></i>
                         </div>
 
-                        <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="{{ $basketCount }}" aria-label="سبد خرید، {{ $basketCount }} محصول" aria-controls="header-basket">
+                        <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="{{ $basketCount }}" aria-label="سبد خرید، {{ $basketCount }} محصول"
+                            aria-controls="header-basket">
                             <i class="zmdi zmdi-shopping-cart" aria-hidden="true"></i>
                         </button>
                     </div>
@@ -110,7 +111,8 @@
                     <i class="zmdi zmdi-search"></i>
                 </div>
 
-                <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="{{ $basketCount }}" aria-label="سبد خرید، {{ $basketCount }} محصول" aria-controls="header-basket">
+                <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="{{ $basketCount }}" aria-label="سبد خرید، {{ $basketCount }} محصول"
+                    aria-controls="header-basket">
                     <i class="zmdi zmdi-shopping-cart" aria-hidden="true"></i>
                 </button>
 
@@ -176,9 +178,7 @@
                 <ul class="header-cart-wrapitem w-full">
                     @forelse ($basketProducts as $basketProduct)
                         @php
-                            $basketImage = $basketProduct->thumbnail_url
-                                ? \Illuminate\Support\Facades\Storage::disk('product_images')->url($basketProduct->thumbnail_url)
-                                : asset('images/product-01.jpg');
+                            $basketImage = $basketProduct->thumbnail_url ? \Illuminate\Support\Facades\Storage::disk('product_images')->url($basketProduct->thumbnail_url) : asset('images/product-01.jpg');
                         @endphp
                         <li class="header-cart-item flex-w flex-t m-b-12">
                             <div class="header-cart-item-img">
@@ -194,6 +194,14 @@
                                     {{ number_format($basketProduct->price) }} تومان
                                 </span>
                             </div>
+
+                            <form action="{{ route('frontend.basket.remove', $basketProduct->id) }}" method="POST" class="header-cart-item-remove p-t-8">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="flex-c-m w-full fs-22 cl2 hov-cl1 trans-04" aria-label="حذف {{ $basketProduct->title }} از سبد خرید" title="حذف از سبد خرید">
+                                    <i class="zmdi zmdi-delete" aria-hidden="true"></i>
+                                </button>
+                            </form>
                         </li>
                     @empty
                         <li class="stext-102 cl6 p-tb-20">
@@ -208,8 +216,8 @@
                     </div>
 
                     <div class="header-cart-buttons flex-w w-full">
-                        <a href="{{ route('frontend.products.all') }}" class="flex-c-m stext-101 cl0 size-107 w-100 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-l-8 m-b-10">
-                            ادامه خرید
+                        <a href="{{ route('frontend.checkout') }}" class="flex-c-m stext-101 cl0 size-107 w-100 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-l-8 m-b-10">
+                            مشاهده سبد خرید و پرداخت
                         </a>
                     </div>
                 </div>

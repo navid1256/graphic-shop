@@ -104,6 +104,64 @@ class BascketControllerTest extends TestCase
             ->assertCookieMissing('basket');
     }
 
+    public function test_removing_a_product_preserves_other_items_and_the_product_record(): void
+    {
+        $this->freezeTime();
+        $first = $this->createProduct('Removed design');
+        $second = $this->createProduct('Remaining design');
+        $remaining = [$second->id => ['title' => $second->title, 'price' => $second->price]];
+
+        $response = $this->from(route('frontend.products.show', $first->id))
+            ->withCookie('basket', json_encode([
+                $first->id => ['title' => $first->title, 'price' => $first->price],
+                $second->id => $remaining[$second->id],
+            ]))
+            ->delete(route('frontend.basket.remove', $first->id));
+
+        $response->assertRedirect(route('frontend.products.show', $first->id))
+            ->assertSessionHas('success')
+            ->assertCookie('basket');
+        $cookie = $response->getCookie('basket');
+        $this->assertSame($remaining, json_decode($cookie->getValue(), true, flags: JSON_THROW_ON_ERROR));
+        $this->assertSame(now()->addMinutes(600)->timestamp, $cookie->getExpiresTime());
+        $this->assertDatabaseHas('products', ['id' => $first->id]);
+    }
+
+    public function test_removing_the_last_item_leaves_an_empty_basket(): void
+    {
+        $response = $this->from(route('frontend.products.all'))
+            ->withCookie('basket', '{"42":{"title":"Last design","price":10000}}')
+            ->delete(route('frontend.basket.remove', 42));
+
+        $response->assertRedirect(route('frontend.products.all'))->assertCookie('basket');
+        $this->assertSame([], json_decode($response->getCookie('basket')->getValue(), true));
+    }
+
+    #[DataProvider('invalidBasketCookies')]
+    public function test_removing_from_an_invalid_basket_is_safe(string $cookie): void
+    {
+        $response = $this->withCookie('basket', $cookie)
+            ->delete(route('frontend.basket.remove', 42));
+
+        $response->assertRedirect()->assertCookie('basket');
+        $this->assertSame([], json_decode($response->getCookie('basket')->getValue(), true));
+    }
+
+    public function test_removing_an_absent_item_preserves_the_basket(): void
+    {
+        $basket = [42 => ['title' => 'Existing design', 'price' => 10000]];
+        $response = $this->withCookie('basket', json_encode($basket))
+            ->delete(route('frontend.basket.remove', 99));
+
+        $response->assertRedirect()->assertCookie('basket');
+        $this->assertSame($basket, json_decode($response->getCookie('basket')->getValue(), true));
+    }
+
+    public function test_basket_items_cannot_be_removed_using_a_get_request(): void
+    {
+        $this->get(route('frontend.basket.remove', 42))->assertStatus(405);
+    }
+
     private function createProduct(string $title): Product
     {
         $category = Category::create(['title' => 'Designs', 'slug' => 'designs']);

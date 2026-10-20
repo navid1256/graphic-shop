@@ -1062,7 +1062,16 @@ Input, textarea : 14px/1.6 '', Arial, sans-serif;
 
 /*---------------------------------------------*/
 .header-cart-item-txt {
-  width: calc(100% - 80px);
+  width: calc(100% - 124px);
+  overflow-wrap: anywhere;
+}
+
+.header-cart-item-remove {
+  width: 44px;
+}
+
+.header-cart-item-remove button {
+  min-height: 44px;
 }
 
 .header-cart-item-name {
@@ -1974,6 +1983,19 @@ input.num-product::-webkit-inner-spin-button {
   width: 120px;
   font-size: 16px;
 }
+
+.table-shopping-cart .checkout-remove-column {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.checkout-remove-form,
+.checkout-remove-form button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+}
+
 th{
     text-align: right !important;
 }
