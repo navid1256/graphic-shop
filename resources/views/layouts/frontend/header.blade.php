@@ -89,9 +89,9 @@
                             <i class="zmdi zmdi-search"></i>
                         </div>
 
-                        <div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="۲">
-                            <i class="zmdi zmdi-shopping-cart"></i>
-                        </div>
+                        <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="{{ $basketCount }}" aria-label="سبد خرید، {{ $basketCount }} محصول" aria-controls="header-basket">
+                            <i class="zmdi zmdi-shopping-cart" aria-hidden="true"></i>
+                        </button>
                     </div>
                 </nav>
             </div>
@@ -110,9 +110,9 @@
                     <i class="zmdi zmdi-search"></i>
                 </div>
 
-                <div class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="2">
-                    <i class="zmdi zmdi-shopping-cart"></i>
-                </div>
+                <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="{{ $basketCount }}" aria-label="سبد خرید، {{ $basketCount }} محصول" aria-controls="header-basket">
+                    <i class="zmdi zmdi-shopping-cart" aria-hidden="true"></i>
+                </button>
 
                 <a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti" data-notify="0">
                     <i class="zmdi zmdi-favorite-outline"></i>
@@ -158,7 +158,7 @@
     </header>
 
     <!-- Cart -->
-    <div class="wrap-header-cart js-panel-cart">
+    <div class="wrap-header-cart js-panel-cart" id="header-basket">
         <div class="s-full js-hide-cart"></div>
 
         <div class="header-cart flex-col-l p-l-65 p-r-25">
@@ -167,70 +167,49 @@
                     سبد خرید
                 </span>
 
-                <div class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart">
-                    <i class="zmdi zmdi-close"></i>
-                </div>
+                <button type="button" class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart" aria-label="بستن سبد خرید">
+                    <i class="zmdi zmdi-close" aria-hidden="true"></i>
+                </button>
             </div>
 
             <div class="header-cart-content flex-w js-pscroll">
                 <ul class="header-cart-wrapitem w-full">
-                    <li class="header-cart-item flex-w flex-t m-b-12">
-                        <div class="header-cart-item-img">
-                            <img src="{{ asset('images/item-cart-01.jpg') }}" alt="IMG">
-                        </div>
+                    @forelse ($basketProducts as $basketProduct)
+                        @php
+                            $basketImage = $basketProduct->thumbnail_url
+                                ? \Illuminate\Support\Facades\Storage::disk('product_images')->url($basketProduct->thumbnail_url)
+                                : asset('images/product-01.jpg');
+                        @endphp
+                        <li class="header-cart-item flex-w flex-t m-b-12">
+                            <div class="header-cart-item-img">
+                                <img src="{{ $basketImage }}" alt="{{ $basketProduct->title }}">
+                            </div>
 
-                        <div class="header-cart-item-txt p-t-8">
-                            <a href="single.php" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                کارت ویزیت وکیل
-                            </a>
+                            <div class="header-cart-item-txt p-t-8">
+                                <a href="{{ route('frontend.products.show', $basketProduct->id) }}" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                                    {{ $basketProduct->title }}
+                                </a>
 
-                            <span class="header-cart-item-info">
-                                ۲۳ هزار تومان
-                            </span>
-                        </div>
-                    </li>
-
-                    <li class="header-cart-item flex-w flex-t m-b-12">
-                        <div class="header-cart-item-img">
-                            <img src="{{ asset('images/item-cart-02.jpg') }}" alt="IMG">
-                        </div>
-
-                        <div class="header-cart-item-txt p-t-8">
-                            <a href="single.php" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                تراکت فروشگاه کالای خانه
-                            </a>
-
-                            <span class="header-cart-item-info">
-                                ۱۲ هزار تومان
-                            </span>
-                        </div>
-                    </li>
-
-                    <li class="header-cart-item flex-w flex-t m-b-12">
-                        <div class="header-cart-item-img">
-                            <img src="{{ asset('images/item-cart-03.jpg') }}" alt="IMG">
-                        </div>
-
-                        <div class="header-cart-item-txt p-t-8">
-                            <a href="single.php" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
-                                وکتور بکگراند
-                            </a>
-
-                            <span class="header-cart-item-info">
-                                ۲ هزار تومان
-                            </span>
-                        </div>
-                    </li>
+                                <span class="header-cart-item-info">
+                                    {{ number_format($basketProduct->price) }} تومان
+                                </span>
+                            </div>
+                        </li>
+                    @empty
+                        <li class="stext-102 cl6 p-tb-20">
+                            سبد خرید شما خالی است.
+                        </li>
+                    @endforelse
                 </ul>
 
                 <div class="w-full">
                     <div class="header-cart-total w-full p-tb-40">
-                        جمع کل: ۱۹ هزار تومان
+                        جمع کل: {{ number_format($basketTotal) }} تومان
                     </div>
 
                     <div class="header-cart-buttons flex-w w-full">
-                        <a href="checkout.php" class="flex-c-m stext-101 cl0 size-107 w-100 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-l-8 m-b-10">
-                            مشاهده سبد خرید و پرداخت
+                        <a href="{{ route('frontend.products.all') }}" class="flex-c-m stext-101 cl0 size-107 w-100 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-l-8 m-b-10">
+                            ادامه خرید
                         </a>
                     </div>
                 </div>
