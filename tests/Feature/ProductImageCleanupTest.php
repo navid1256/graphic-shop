@@ -19,6 +19,37 @@ class ProductImageCleanupTest extends TestCase
 {
     use DatabaseMigrations;
 
+    public function test_product_creation_saves_description_as_plain_text(): void
+    {
+        Storage::fake('product_images');
+        $category = Category::create(['title' => 'Designs', 'slug' => 'designs']);
+        User::factory()->create([
+            'email' => 'admin@yahoo.com',
+            'mobile' => '09120000001',
+            'role' => 'admin',
+        ]);
+        $image = static fn (string $name) => UploadedFile::fake()->createWithContent(
+            $name,
+            base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=')
+        );
+
+        $this->post(route('admin.products.store'), [
+            'title' => 'Poster',
+            'price' => 100,
+            'category_id' => $category->id,
+            'description' => '<p>Poster description&nbsp;</p>',
+            'thumbnail_url' => $image('thumbnail.png'),
+            'demo_url' => $image('demo.png'),
+            'source_url' => $image('source.png'),
+        ])->assertRedirect(route('admin.products.create'))
+            ->assertSessionHasNoErrors();
+
+        $this->assertDatabaseHas('products', [
+            'title' => 'Poster',
+            'description' => 'Poster description',
+        ]);
+    }
+
     public function test_replacing_one_image_deletes_only_its_old_file(): void
     {
         $disk = Storage::fake('product_images');
@@ -46,7 +77,7 @@ class ProductImageCleanupTest extends TestCase
 
         $this->put(route('admin.products.update', $product->id), [
             'title' => $product->title,
-            'description' => $product->description,
+            'description' => '<p>Edited description&nbsp;</p>',
             'price' => $product->price,
             'category_id' => $product->category_id,
             'thumbnail_url' => null,
@@ -57,6 +88,7 @@ class ProductImageCleanupTest extends TestCase
             ->assertSessionHas('success');
 
         $product->refresh();
+        $this->assertSame('Edited description', $product->description);
         $this->assertNotSame('1/old-demo.jpg', $product->demo_url);
         $this->assertSame('1/old-thumbnail.jpg', $product->thumbnail_url);
         $this->assertSame('1/old-source.jpg', $product->source_url);

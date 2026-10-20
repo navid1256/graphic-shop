@@ -8,6 +8,7 @@ use App\Http\Requests\Admin\Products\UpdateRequest;
 use App\Models\Product;
 use App\Models\Category;
 use App\Models\User;
+use App\Utilities\HtmlToPlainText;
 use App\Utilities\ImageUploader;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Storage;
@@ -42,11 +43,12 @@ class ProductsController extends Controller
         // Validate the request data
         $validatedData = $request->validated();
         $admin = User::where('email', 'admin@yahoo.com')->first();
+
         $createdProduct = Product::create([
             'title' => $validatedData['title'],
             'price' => $validatedData['price'],
             'category_id' => $validatedData['category_id'],
-            'description' => $validatedData['description'],
+            'description' => HtmlToPlainText::convert($validatedData['description']),
             'owner_id' => $admin->id,
         ]);
         try {
@@ -120,7 +122,7 @@ class ProductsController extends Controller
             'title' => $validatedData['title'],
             'price' => $validatedData['price'],
             'category_id' => $validatedData['category_id'],
-            'description' => $validatedData['description'],
+            'description' => HtmlToPlainText::convert($validatedData['description']),
         ]);
 
         try {
