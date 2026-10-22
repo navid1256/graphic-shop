@@ -86,20 +86,37 @@
                             اطلاعات کاربری
                         </h4>
 
-                        <form action="" method="post">
+                        @if (session('success'))
+                            <p class="alert alert-success" role="status">{{ session('success') }}</p>
+                        @endif
+                        @if ($errors->any())
+                            <div class="alert alert-danger" role="alert">
+                                <ul>
+                                    @foreach ($errors->all() as $error)
+                                        <li>{{ $error }}</li>
+                                    @endforeach
+                                </ul>
+                            </div>
+                        @endif
+
+                        <form action="{{ route('frontend.payment.pay') }}" method="post">
+                            @csrf
                             <div class="flex-w flex-t">
                                 <div class="w-full">
                                     <div class="p-t-15">
 
                                         <div class="bor8 bg0 m-b-12">
-                                            <input class="stext-111 cl8 plh3 size-111 p-lr-15" type="text" name="family" placeholder="نام و نام خانوادگی">
+                                            <label for="payment-family" class="stext-111 p-lr-15">نام و نام خانوادگی (الزامی)</label>
+                                            <input id="payment-family" class="stext-111 cl8 plh3 size-111 p-lr-15" type="text" name="family" value="{{ old('family') }}" autocomplete="name" maxlength="120" required>
                                         </div>
                                         <div class="bor8 bg0 m-b-12">
-                                            <input class="stext-111 cl8 plh3 size-111 p-lr-15" type="text" name="mobile" placeholder="موبایل">
+                                            <label for="payment-mobile" class="stext-111 p-lr-15">موبایل (الزامی، مانند 09123456789)</label>
+                                            <input id="payment-mobile" class="stext-111 cl8 plh3 size-111 p-lr-15" type="tel" name="mobile" value="{{ old('mobile') }}" autocomplete="tel-national" pattern="09[0-9]{9}" maxlength="11" required>
                                         </div>
 
                                         <div class="bor8 bg0 m-b-22">
-                                            <input class="stext-111 cl8 plh3 size-111 p-lr-15" type="text" name="email" placeholder="ایمیل">
+                                            <label for="payment-email" class="stext-111 p-lr-15">ایمیل (اختیاری)</label>
+                                            <input id="payment-email" class="stext-111 cl8 plh3 size-111 p-lr-15" type="email" name="email" value="{{ old('email') }}" autocomplete="email" maxlength="254">
                                         </div>
 
                                     </div>

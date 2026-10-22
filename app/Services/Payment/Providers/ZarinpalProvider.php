@@ -20,14 +20,15 @@ final class ZarinpalProvider implements AbstractProviderInterface
     public function __construct(
         private readonly string $merchantId,
         private readonly bool $sandbox = true,
-        ?HttpClientInterface $http = null
+        ?HttpClientInterface $http = null,
+        private readonly bool $autoVerify = false,
     ) {
         if (!preg_match(
             '/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i',
             $merchantId
         )) {
             throw new InvalidArgumentException(
-                'Zarinpal Merchant ID must be a UUID.'
+                'Zarinpal merchant_id must be a UUID.'
             );
         }
 
@@ -44,15 +45,31 @@ final class ZarinpalProvider implements AbstractProviderInterface
     public function pay(
         RequestInterface $request
     ): PaymentInitiation {
+        if ($request->amountRials() <= 0) {
+            throw new InvalidArgumentException(
+                'Payment amount must be positive.'
+            );
+        }
+
+        $description = trim($request->description());
+        $length = preg_match_all('/./us', $description);
+
+        if ($length === false || $length < 1 || $length > 500) {
+            throw new InvalidArgumentException(
+                'Description must contain 1 to 500 characters.'
+            );
+        }
+
         $metadata = [
             'order_id' => $request->orderId(),
+            'auto_verify' => $this->autoVerify,
         ];
 
-        if ($request->mobile() !== null) {
+        if ($request->mobile()) {
             $metadata['mobile'] = $request->mobile();
         }
 
-        if ($request->email() !== null) {
+        if ($request->email()) {
             $metadata['email'] = $request->email();
         }
 
@@ -62,31 +79,27 @@ final class ZarinpalProvider implements AbstractProviderInterface
                 'merchant_id' => $this->merchantId,
                 'amount' => $request->amountRials(),
                 'currency' => 'IRR',
+                'description' => $description,
                 'callback_url' => $request->callbackUrl(),
-                'description' => $request->description(),
                 'metadata' => $metadata,
             ]
         );
 
-        $data = $response['data'] ?? [];
-        $authority = $data['authority'] ?? null;
+        $data = $response['data'] ?? null;
+        $code = is_array($data) ? ($data['code'] ?? null) : null;
+        $authority = is_array($data)
+            ? ($data['authority'] ?? null)
+            : null;
 
         if (
-            (int) ($data['code'] ?? 0) !== 100 ||
+            !is_numeric($code) ||
+            (int) $code !== 100 ||
             !is_string($authority) ||
             !preg_match('/^[A-Za-z0-9_-]{10,128}$/', $authority)
         ) {
-            $code = isset($data['code'])
-                ? (int) $data['code']
-                : (
-                    isset($response['errors']['code'])
-                    ? (int) $response['errors']['code']
-                    : null
-                );
-
             throw new GatewayException(
-                'Zarinpal did not create a payment request.',
-                $code
+                'Zarinpal payment request failed.',
+                self::gatewayCode($response)
             );
         }
 
@@ -102,15 +115,18 @@ final class ZarinpalProvider implements AbstractProviderInterface
         string $transactionId,
         int $expectedAmountRials
     ): PaymentVerification {
-        if (
-            !preg_match(
-                '/^[A-Za-z0-9_-]{10,128}$/',
-                $transactionId
-            ) ||
-            $expectedAmountRials <= 0
-        ) {
+        if (!preg_match(
+            '/^[A-Za-z0-9_-]{10,128}$/',
+            $transactionId
+        )) {
             throw new InvalidArgumentException(
-                'Invalid Zarinpal transaction or amount.'
+                'Invalid Zarinpal Authority.'
+            );
+        }
+
+        if ($expectedAmountRials <= 0) {
+            throw new InvalidArgumentException(
+                'Invalid payment amount.'
             );
         }
 
@@ -123,15 +139,7 @@ final class ZarinpalProvider implements AbstractProviderInterface
             ]
         );
 
-        $data = $response['data'] ?? [];
-
-        $code = isset($data['code'])
-            ? (int) $data['code']
-            : (
-                isset($response['errors']['code'])
-                ? (int) $response['errors']['code']
-                : null
-            );
+        $code = self::gatewayCode($response);
 
         $status = match ($code) {
             100 => PaymentVerification::VERIFIED,
@@ -139,7 +147,12 @@ final class ZarinpalProvider implements AbstractProviderInterface
             default => PaymentVerification::FAILED,
         };
 
-        $referenceId = isset($data['ref_id'])
+        $data = is_array($response['data'] ?? null)
+            ? $response['data']
+            : [];
+
+        $referenceId = isset($data['ref_id']) &&
+            is_scalar($data['ref_id'])
             ? (string) $data['ref_id']
             : null;
 
@@ -148,7 +161,7 @@ final class ZarinpalProvider implements AbstractProviderInterface
             ($referenceId === null || $referenceId === '')
         ) {
             throw new GatewayException(
-                'Zarinpal confirmed payment without a reference ID.',
+                'Verified payment has no ref_id.',
                 $code
             );
         }
@@ -158,9 +171,7 @@ final class ZarinpalProvider implements AbstractProviderInterface
             $status,
             $transactionId,
             $referenceId,
-            $status === PaymentVerification::VERIFIED
-                ? $expectedAmountRials
-                : null,
+            null,
             $code,
             $response
         );
@@ -169,11 +180,11 @@ final class ZarinpalProvider implements AbstractProviderInterface
     public function callbackTransactionId(
         array $callback
     ): ?string {
-        $token = $callback['Authority'] ?? null;
+        $authority = $callback['Authority'] ?? null;
 
-        return is_string($token) &&
-            preg_match('/^[A-Za-z0-9_-]{10,128}$/', $token)
-            ? $token
+        return is_string($authority) &&
+            preg_match('/^[A-Za-z0-9_-]{10,128}$/', $authority)
+            ? $authority
             : null;
     }
 
@@ -181,5 +192,26 @@ final class ZarinpalProvider implements AbstractProviderInterface
         array $callback
     ): bool {
         return ($callback['Status'] ?? null) === 'OK';
+    }
+
+    private static function gatewayCode(
+        array $response
+    ): ?int {
+        foreach (
+            [
+                $response['data'] ?? null,
+                $response['errors'] ?? null,
+            ] as $section
+        ) {
+            if (
+                is_array($section) &&
+                isset($section['code']) &&
+                is_numeric($section['code'])
+            ) {
+                return (int) $section['code'];
+            }
+        }
+
+        return null;
     }
 }

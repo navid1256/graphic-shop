@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Home\BascketController;
 use App\Http\Controllers\Home\CheckoutController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Home\ProductsController as HomeProductsController;
 use \App\Http\Controllers\Admin\PaymentsController;
@@ -17,6 +18,9 @@ Route::prefix('')->group(function () {
     Route::post('basket/add/{product_id}', [BascketController::class, 'addToBascket'])->name('frontend.basket.add');
     Route::delete('basket/remove/{product_id}', [BascketController::class, 'removeFromBascket'])->name('frontend.basket.remove');
     Route::get('checkout', [CheckoutController::class, 'show'])->name('frontend.checkout');
+    Route::post('payment', [PaymentController::class, 'pay'])->name('frontend.payment.pay');
+    Route::get('payment/callback/{payment}', [PaymentController::class, 'callback'])
+        ->whereUuid('payment')->name('frontend.payment.callback');
 });
 
 Route::prefix('admin')->group(function () {

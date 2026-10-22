@@ -89,18 +89,19 @@ final class PaymentService
         return match ($name) {
             self::ZARINPAL => new ZarinpalProvider(
                 (string) config(
-                    'payment.providers.zarinpal.merchant_id',
+                    'payments.providers.zarinpal.merchant_id',
                     ''
                 ),
                 (bool) config(
-                    'payment.providers.zarinpal.sandbox',
+                    'payments.providers.zarinpal.sandbox',
                     true
                 ),
+                autoVerify: (bool) config('payments.providers.zarinpal.auto_verify', false),
             ),
 
             self::ZIBAL => new ZibalProvider(
                 (string) config(
-                    'payment.providers.zibal.merchant',
+                    'payments.providers.zibal.merchant',
                     ''
                 ),
             ),
