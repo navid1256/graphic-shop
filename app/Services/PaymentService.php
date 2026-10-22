@@ -1,31 +1,113 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Services;
 
-use App\Services\Payment\Contracts\PayableInterface;
+
+
+
+
+use App\Services\Payment\Contracts\AbstractProviderInterface;
 use App\Services\Payment\Contracts\RequestInterface;
-use InvalidArgumentException;
+use App\Services\Payment\Exceptions\InvalidPaymentCallbackException;
+use App\Services\Payment\Exceptions\ProvideNotFoundException;
+use App\Services\Payment\Providers\ZarinpalProvider;
+use App\Services\Payment\Providers\ZibalProvider;
+use App\Services\Payment\Results\PaymentInitiation;
+use App\Services\Payment\Results\PaymentVerification;
 
-class PaymentService
+final class PaymentService
 {
-    private const IDPAY = 'IDPayProvider';
-    private const ZARINPAL = 'ZarinpalProvider';
+    public const ZARINPAL = 'zarinpal';
+    public const ZIBAL = 'zibal';
 
-    public function __construct(private string $providerName, private RequestInterface $request) {}
+    private readonly AbstractProviderInterface $provider;
 
-    public function pay()
-    {
-        return $this->findProvider()->pay();
+    public function __construct(
+        private readonly string $providerName,
+        private readonly RequestInterface $request,
+        ?AbstractProviderInterface $provider = null
+    ) {
+        $this->provider = $provider
+            ?? $this->findProvider($providerName);
     }
 
-    private function findProvider(): PayableInterface
+    public function pay(): PaymentInitiation
     {
-        $providerClass = 'App\\Services\\Payment\\Providers\\' . $this->providerName;
+        return $this->provider->pay($this->request);
+    }
 
-        if (! class_exists($providerClass)) {
-            throw new InvalidArgumentException("Payment provider [{$this->providerName}] does not exist.");
+    public function verify(
+        string $transactionId
+    ): PaymentVerification {
+        return $this->provider->verify(
+            $transactionId,
+            $this->request->amountRials()
+        );
+    }
+
+    public function verifyCallback(
+        array $callback,
+        string $persistedTransactionId
+    ): PaymentVerification {
+        $receivedId = $this->provider
+            ->callbackTransactionId($callback);
+
+        if (
+            $receivedId === null ||
+            !hash_equals($persistedTransactionId, $receivedId)
+        ) {
+            throw new InvalidPaymentCallbackException(
+                'Callback transaction ID does not match stored payment.'
+            );
         }
 
-        return new $providerClass();
+        if (
+            !$this->provider->callbackIndicatesSuccess($callback)
+        ) {
+            return new PaymentVerification(
+                $this->providerName,
+                PaymentVerification::FAILED,
+                $receivedId
+            );
+        }
+
+        return $this->verify($receivedId);
+    }
+
+    public function callbackTransactionId(
+        array $callback
+    ): ?string {
+        return $this->provider
+            ->callbackTransactionId($callback);
+    }
+
+    private function findProvider(
+        string $name
+    ): AbstractProviderInterface {
+        return match ($name) {
+            self::ZARINPAL => new ZarinpalProvider(
+                (string) config(
+                    'payment.providers.zarinpal.merchant_id',
+                    ''
+                ),
+                (bool) config(
+                    'payment.providers.zarinpal.sandbox',
+                    true
+                ),
+            ),
+
+            self::ZIBAL => new ZibalProvider(
+                (string) config(
+                    'payment.providers.zibal.merchant',
+                    ''
+                ),
+            ),
+
+            default => throw new ProvideNotFoundException(
+                "Unknown payment provider [{$name}]."
+            ),
+        };
     }
 }

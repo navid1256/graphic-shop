@@ -9,6 +9,7 @@ use App\Http\Controllers\Home\BascketController;
 use App\Http\Controllers\Home\CheckoutController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Home\ProductsController as HomeProductsController;
+use \App\Http\Controllers\Admin\PaymentsController;
 
 Route::prefix('')->group(function () {
     Route::get('', [HomeProductsController::class, 'index'])->name('frontend.products.all');
@@ -57,6 +58,7 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::prefix('payments')->group(function () {
-        Route::get('', [\App\Http\Controllers\Admin\PaymentsController::class, 'all'])->name('admin.payments.all');
+        Route::get('pay', [PaymentsController::class, 'pay'])->name('admin.payments.pay');
+        Route::get('callback', [PaymentsController::class, 'callback'])->name('admin.payments.callback');
     });
 });
