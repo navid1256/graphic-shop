@@ -113,6 +113,50 @@ class CheckoutPageTest extends TestCase
         $checkout->assertSee('25,000 تومان')->assertDontSee('54,000 تومان');
     }
 
+    public function test_checkout_continues_to_gateway_selection_with_customer_and_current_total(): void
+    {
+        $product = $this->createProduct('Design', 25000);
+        $customer = ['family' => 'Test Customer', 'mobile' => '09123456789', 'email' => 'test@example.com'];
+        $this->withCookie('basket', json_encode([$product->id => ['price' => 1]]));
+
+        $this->get(route('frontend.checkout'))
+            ->assertSee(route('frontend.checkout.prepare'));
+        $this->post(route('frontend.checkout.prepare'), $customer)
+            ->assertRedirect(route('frontend.checkout.select'))
+            ->assertSessionHas('checkout.customer', $customer);
+
+        $response = $this->get(route('frontend.checkout.select'))->assertOk()
+            ->assertSee('25,000 تومان')->assertSee('زرین‌پال')->assertSee('زیبال');
+        $document = new DOMDocument;
+        @$document->loadHTML('<?xml encoding="UTF-8">'.$response->getContent());
+        $xpath = new DOMXPath($document);
+        $form = $xpath->query('//form[@action="'.route('frontend.payment.pay').'"]')->item(0);
+        $this->assertNotNull($form);
+        $this->assertSame('post', strtolower($form->getAttribute('method')));
+        $this->assertCount(1, $xpath->query('.//input[@name="_token"]', $form));
+        foreach ($customer as $name => $value) {
+            $this->assertCount(1, $xpath->query('.//input[@type="hidden" and @name="'.$name.'" and @value="'.$value.'"]', $form));
+        }
+        foreach (['zarinpal', 'zibal'] as $provider) {
+            $this->assertCount(1, $xpath->query('.//input[@type="radio" and @name="provider" and @value="'.$provider.'" and @required]', $form));
+        }
+        $this->get(route('frontend.checkout'))->assertSee('value="Test Customer"', false);
+    }
+
+    public function test_gateway_selection_requires_customer_details_and_a_nonempty_basket(): void
+    {
+        $this->get(route('frontend.checkout.select'))
+            ->assertRedirect(route('frontend.checkout'))->assertSessionHasErrors('payment');
+        $this->from(route('frontend.checkout'))->post(route('frontend.checkout.prepare'), [])
+            ->assertRedirect(route('frontend.checkout'))->assertSessionHasErrors(['family', 'mobile']);
+        $this->assertNull(session('checkout.customer'));
+
+        $this->post(route('frontend.checkout.prepare'), ['family' => 'Test Customer', 'mobile' => '09123456789'])
+            ->assertRedirect(route('frontend.checkout.select'));
+        $this->get(route('frontend.checkout.select'))
+            ->assertRedirect(route('frontend.checkout'))->assertSessionHasErrors('payment');
+    }
+
     private function checkoutTable(TestResponse $response): string
     {
         $document = new DOMDocument;

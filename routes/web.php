@@ -18,6 +18,8 @@ Route::prefix('')->group(function () {
     Route::post('basket/add/{product_id}', [BascketController::class, 'addToBascket'])->name('frontend.basket.add');
     Route::delete('basket/remove/{product_id}', [BascketController::class, 'removeFromBascket'])->name('frontend.basket.remove');
     Route::get('checkout', [CheckoutController::class, 'show'])->name('frontend.checkout');
+    Route::post('checkout/select', [CheckoutController::class, 'prepareSelection'])->name('frontend.checkout.prepare');
+    Route::get('checkout/select', [CheckoutController::class, 'select'])->name('frontend.checkout.select');
     Route::post('payment', [PaymentController::class, 'pay'])->name('frontend.payment.pay');
     Route::get('payment/callback/{payment}', [PaymentController::class, 'callback'])
         ->whereUuid('payment')->name('frontend.payment.callback');

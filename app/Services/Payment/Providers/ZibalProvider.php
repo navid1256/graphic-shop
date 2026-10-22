@@ -106,6 +106,19 @@ final class ZibalProvider implements AbstractProviderInterface
             default => PaymentVerification::FAILED,
         };
 
+        // A previous verify may have succeeded before our session was updated.
+        // Reconcile with the gateway rather than accepting result=201 alone.
+        if ($status === PaymentVerification::ALREADY_VERIFIED) {
+            $response = $this->http->post('https://gateway.zibal.ir/v1/inquiry', [
+                'merchant' => $this->merchant,
+                'trackId' => $transactionId,
+            ]);
+
+            if (($response['result'] ?? null) != 100 || ($response['status'] ?? null) != 1) {
+                throw new GatewayException('Zibal inquiry did not confirm a verified payment.', $code);
+            }
+        }
+
         $paidAmount = isset($response['amount']) &&
             filter_var(
                 $response['amount'],
@@ -115,7 +128,7 @@ final class ZibalProvider implements AbstractProviderInterface
             : null;
 
         if (
-            $status === PaymentVerification::VERIFIED &&
+            in_array($status, [PaymentVerification::VERIFIED, PaymentVerification::ALREADY_VERIFIED], true) &&
             $paidAmount !== $expectedAmountRials
         ) {
             throw new GatewayException(
@@ -134,19 +147,9 @@ final class ZibalProvider implements AbstractProviderInterface
             );
         }
 
-        $referenceId = isset($response['refNumber'])
+        $referenceId = isset($response['refNumber']) && is_scalar($response['refNumber'])
             ? (string) $response['refNumber']
             : null;
-
-        if (
-            $status === PaymentVerification::VERIFIED &&
-            ($referenceId === null || $referenceId === '')
-        ) {
-            throw new GatewayException(
-                'Zibal confirmed payment without a reference number.',
-                $code
-            );
-        }
 
         return new PaymentVerification(
             'zibal',

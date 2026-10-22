@@ -115,6 +115,61 @@ class PaymentControllerTest extends TestCase
         $this->assertSame('pending', session('payments.'.$id.'.status'));
     }
 
+    public static function successfulZibalResponses(): array
+    {
+        return [
+            'first verification without bank reference' => [100],
+            'recover previously verified transaction' => [201],
+        ];
+    }
+
+    #[DataProvider('successfulZibalResponses')]
+    public function test_zibal_without_reference_number_and_repeated_verification(int $code): void
+    {
+        Http::fake([
+            'https://gateway.zibal.ir/v1/request' => Http::response(['result' => 100, 'trackId' => 123456]),
+            'https://gateway.zibal.ir/v1/verify' => Http::response(['result' => $code, 'amount' => 250000]),
+            'https://gateway.zibal.ir/v1/inquiry' => Http::response(['result' => 100, 'status' => 1, 'amount' => 250000]),
+        ]);
+        $this->fillBasket();
+        $this->post(route('frontend.payment.pay'), $this->customer('zibal'));
+        $id = array_key_first(session('payments'));
+        $url = route('frontend.payment.callback', ['payment' => $id]).'?trackId=123456&success=1';
+
+        $this->get($url)->assertSessionHasNoErrors()->assertSessionHas('success');
+        $this->assertSame('verified', session('payments.'.$id.'.status'));
+        $this->assertNull(session('payments.'.$id.'.reference_id'));
+        $this->assertStringContainsString('123456', session('success'));
+        $this->get($url)->assertSessionHasNoErrors()->assertSessionHas('success');
+        Http::assertSentCount($code === 100 ? 2 : 3);
+    }
+
+    public static function invalidInquiries(): array
+    {
+        return [
+            'wrong amount' => [['result' => 100, 'status' => 1, 'amount' => 1]],
+            'missing amount' => [['result' => 100, 'status' => 1]],
+            'unverified' => [['result' => 100, 'status' => 2, 'amount' => 250000]],
+            'failed inquiry' => [['result' => 203]],
+        ];
+    }
+
+    #[DataProvider('invalidInquiries')]
+    public function test_already_verified_requires_confirmed_status_and_matching_amount(array $inquiry): void
+    {
+        Http::fake([
+            'https://gateway.zibal.ir/v1/request' => Http::response(['result' => 100, 'trackId' => 123456]),
+            'https://gateway.zibal.ir/v1/verify' => Http::response(['result' => 201]),
+            'https://gateway.zibal.ir/v1/inquiry' => Http::response($inquiry),
+        ]);
+        $this->fillBasket();
+        $this->post(route('frontend.payment.pay'), $this->customer('zibal'));
+        $id = array_key_first(session('payments'));
+        $this->get(route('frontend.payment.callback', ['payment' => $id]).'?trackId=123456&success=1')
+            ->assertSessionHasErrors('payment');
+        $this->assertSame('pending', session('payments.'.$id.'.status'));
+    }
+
     private function customer(string $provider): array
     {
         return ['family' => 'Test Customer', 'mobile' => '09123456789', 'email' => 'test@example.com', 'provider' => $provider];

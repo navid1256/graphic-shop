@@ -40,7 +40,7 @@ class PaymentController extends Controller
             'order_id' => $paymentId,
             'amount_rials' => (int) $totalTomans * 10,
             'callback_url' => route('frontend.payment.callback', ['payment' => $paymentId]),
-            'description' => 'پرداخت سبد خرید برای '.$data['family'],
+            'description' => 'پرداخت سبد خرید برای ' . $data['family'],
             'mobile' => $data['mobile'],
             'email' => $data['email'] ?? null,
             'product_ids' => $products->modelKeys(),
@@ -49,7 +49,7 @@ class PaymentController extends Controller
 
         try {
             $result = $this->paymentService($payment)->pay();
-        } catch (PaymentException|InvalidArgumentException $exception) {
+        } catch (PaymentException | InvalidArgumentException $exception) {
             report($exception);
 
             return redirect()->route('frontend.checkout')->withInput()
@@ -57,14 +57,14 @@ class PaymentController extends Controller
         }
 
         $payment['transaction_id'] = $result->transactionId;
-        $request->session()->put('payments.'.$paymentId, $payment);
+        $request->session()->put('payments.' . $paymentId, $payment);
 
         return redirect()->away($result->redirectUrl);
     }
 
     public function callback(Request $request, string $payment): RedirectResponse
     {
-        $storedPayment = $request->session()->get('payments.'.$payment);
+        $storedPayment = $request->session()->get('payments.' . $payment);
 
         if (! is_array($storedPayment)) {
             return redirect()->route('frontend.checkout')
@@ -82,19 +82,25 @@ class PaymentController extends Controller
             'Status' => ['sometimes', 'string', 'max:20'],
         ]);
 
+        dd($callback);
+
         try {
             $verification = $this->paymentService($storedPayment)->verifyCallback(
                 $callback,
                 $storedPayment['transaction_id'],
             );
-        } catch (PaymentException|InvalidArgumentException $exception) {
+        } catch (PaymentException | InvalidArgumentException $exception) {
             report($exception);
 
             return redirect()->route('frontend.checkout')
                 ->withErrors(['payment' => 'تأیید پرداخت انجام نشد. در صورت کسر وجه، پیش از پرداخت مجدد وضعیت را پیگیری کنید.']);
         }
 
-        if (! $verification->isNewlyVerified()) {
+        $reconciledZibalPayment = $verification->provider === PaymentService::ZIBAL
+            && $verification->status === PaymentVerification::ALREADY_VERIFIED
+            && $verification->paidAmountRials === $storedPayment['amount_rials'];
+
+        if (! $verification->isNewlyVerified() && ! $reconciledZibalPayment) {
             return redirect()->route('frontend.checkout')->withErrors([
                 'payment' => $verification->status === PaymentVerification::ALREADY_VERIFIED
                     ? 'این تراکنش قبلاً در درگاه تأیید شده است؛ وضعیت آن نیاز به پیگیری دارد.'
@@ -104,10 +110,14 @@ class PaymentController extends Controller
 
         $storedPayment['status'] = PaymentVerification::VERIFIED;
         $storedPayment['reference_id'] = $verification->referenceId;
-        $request->session()->put('payments.'.$payment, $storedPayment);
+        $request->session()->put('payments.' . $payment, $storedPayment);
+
+        $receipt = $verification->referenceId
+            ? 'کد پیگیری: ' . $verification->referenceId
+            : 'شناسه تراکنش زیبال: ' . $verification->transactionId;
 
         return redirect()->route('frontend.checkout')
-            ->with('success', 'پرداخت با موفقیت تأیید شد. کد پیگیری: '.$verification->referenceId);
+            ->with('success', 'پرداخت با موفقیت تأیید شد. ' . $receipt);
     }
 
     private function paymentService(array $payment): PaymentService

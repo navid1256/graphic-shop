@@ -99,7 +99,7 @@
                             </div>
                         @endif
 
-                        <form action="{{ route('frontend.payment.pay') }}" method="post">
+                        <form action="{{ route('frontend.checkout.prepare') }}" method="post">
                             @csrf
                             <div class="flex-w flex-t">
                                 <div class="w-full">
@@ -107,16 +107,16 @@
 
                                         <div class="bor8 bg0 m-b-12">
                                             <label for="payment-family" class="stext-111 p-lr-15">نام و نام خانوادگی (الزامی)</label>
-                                            <input id="payment-family" class="stext-111 cl8 plh3 size-111 p-lr-15" type="text" name="family" value="{{ old('family') }}" autocomplete="name" maxlength="120" required>
+                                            <input id="payment-family" class="stext-111 cl8 plh3 size-111 p-lr-15" type="text" name="family" value="{{ old('family', session('checkout.customer.family')) }}" autocomplete="name" maxlength="120" required>
                                         </div>
                                         <div class="bor8 bg0 m-b-12">
                                             <label for="payment-mobile" class="stext-111 p-lr-15">موبایل (الزامی، مانند 09123456789)</label>
-                                            <input id="payment-mobile" class="stext-111 cl8 plh3 size-111 p-lr-15" type="tel" name="mobile" value="{{ old('mobile') }}" autocomplete="tel-national" pattern="09[0-9]{9}" maxlength="11" required>
+                                            <input id="payment-mobile" class="stext-111 cl8 plh3 size-111 p-lr-15" type="tel" name="mobile" value="{{ old('mobile', session('checkout.customer.mobile')) }}" autocomplete="tel-national" pattern="09[0-9]{9}" maxlength="11" required>
                                         </div>
 
                                         <div class="bor8 bg0 m-b-22">
                                             <label for="payment-email" class="stext-111 p-lr-15">ایمیل (اختیاری)</label>
-                                            <input id="payment-email" class="stext-111 cl8 plh3 size-111 p-lr-15" type="email" name="email" value="{{ old('email') }}" autocomplete="email" maxlength="254">
+                                            <input id="payment-email" class="stext-111 cl8 plh3 size-111 p-lr-15" type="email" name="email" value="{{ old('email', session('checkout.customer.email')) }}" autocomplete="email" maxlength="254">
                                         </div>
 
                                     </div>
@@ -138,7 +138,7 @@
                             </div>
 
                             <button class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer" type="submit">
-                                رفتن به صفحه پرداخت
+                                ادامه و انتخاب درگاه پرداخت
                             </button>
                         </form>
 

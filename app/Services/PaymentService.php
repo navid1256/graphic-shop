@@ -72,7 +72,6 @@ final class PaymentService
                 $receivedId
             );
         }
-
         return $this->verify($receivedId);
     }
 
