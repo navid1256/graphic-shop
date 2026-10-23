@@ -52,11 +52,13 @@ class PaymentControllerTest extends TestCase
             ? ['trackId' => '123456', 'success' => '1']
             : ['Authority' => 'A12345678901234567890', 'Status' => 'OK'];
         $url = route('frontend.payment.callback', ['payment' => $id]).'?'.http_build_query($callback);
-        $this->get($url)->assertRedirect(route('frontend.checkout'))->assertSessionHas('success');
+        $resultUrl = route('frontend.payment.success', ['payment' => $id]);
+        $this->get($url)->assertRedirect($resultUrl);
+        $this->get($resultUrl)->assertOk()->assertSee('987654')->assertSee('25,000');
         $this->assertSame('verified', session('payments.'.$id.'.status'));
         $this->assertSame('987654', session('payments.'.$id.'.reference_id'));
         Http::assertSentCount(2);
-        $this->get($url)->assertSessionHas('success');
+        $this->get($url)->assertRedirect($resultUrl);
         Http::assertSentCount(2);
         $this->assertDatabaseCount('orders', 0);
         $this->assertDatabaseCount('payments', 0);
@@ -77,7 +79,7 @@ class PaymentControllerTest extends TestCase
     public function test_missing_session_cannot_verify_payment(): void
     {
         $this->get('/payment/callback/11111111-1111-4111-8111-111111111111?trackId=123456&success=1')
-            ->assertRedirect(route('frontend.checkout'))->assertSessionHasErrors('payment');
+            ->assertRedirect(route('frontend.payment.failed'))->assertSessionHasErrors('payment');
         Http::assertNothingSent();
     }
 
@@ -136,11 +138,12 @@ class PaymentControllerTest extends TestCase
         $id = array_key_first(session('payments'));
         $url = route('frontend.payment.callback', ['payment' => $id]).'?trackId=123456&success=1';
 
-        $this->get($url)->assertSessionHasNoErrors()->assertSessionHas('success');
+        $resultUrl = route('frontend.payment.success', ['payment' => $id]);
+        $this->get($url)->assertRedirect($resultUrl)->assertSessionHasNoErrors();
         $this->assertSame('verified', session('payments.'.$id.'.status'));
         $this->assertNull(session('payments.'.$id.'.reference_id'));
-        $this->assertStringContainsString('123456', session('success'));
-        $this->get($url)->assertSessionHasNoErrors()->assertSessionHas('success');
+        $this->get($resultUrl)->assertOk()->assertSee('123456');
+        $this->get($url)->assertRedirect($resultUrl)->assertSessionHasNoErrors();
         Http::assertSentCount($code === 100 ? 2 : 3);
     }
 
@@ -168,6 +171,39 @@ class PaymentControllerTest extends TestCase
         $this->get(route('frontend.payment.callback', ['payment' => $id]).'?trackId=123456&success=1')
             ->assertSessionHasErrors('payment');
         $this->assertSame('pending', session('payments.'.$id.'.status'));
+    }
+
+    public function test_success_page_cannot_be_opened_without_a_verified_payment(): void
+    {
+        $id = '11111111-1111-4111-8111-111111111111';
+        $url = route('frontend.payment.success', ['payment' => $id]);
+        $this->get($url)->assertRedirect(route('frontend.payment.failed'));
+        $this->withSession(['payments' => [$id => ['status' => 'pending']]])
+            ->get($url)->assertRedirect(route('frontend.payment.failed'));
+        Http::assertNothingSent();
+    }
+
+    public function test_cancelled_callback_shows_failure_page_without_verifying(): void
+    {
+        $this->fakeGateway('zibal');
+        $this->fillBasket();
+        $this->post(route('frontend.payment.pay'), $this->customer('zibal'));
+        $id = array_key_first(session('payments'));
+        $this->get(route('frontend.payment.callback', ['payment' => $id]).'?trackId=123456&success=0')
+            ->assertRedirect(route('frontend.payment.failed'));
+        $this->get(route('frontend.payment.failed'))->assertOk()->assertSee('پرداخت لغو شد یا ناموفق بود.');
+        Http::assertSentCount(1);
+    }
+
+    public function test_malformed_callback_redirects_to_failure_page(): void
+    {
+        $this->fakeGateway('zibal');
+        $this->fillBasket();
+        $this->post(route('frontend.payment.pay'), $this->customer('zibal'));
+        $id = array_key_first(session('payments'));
+        $this->get(route('frontend.payment.callback', ['payment' => $id]).'?trackId[]=123456&success=1')
+            ->assertRedirect(route('frontend.payment.failed'))->assertSessionHasErrors('payment');
+        Http::assertSentCount(1);
     }
 
     private function customer(string $provider): array

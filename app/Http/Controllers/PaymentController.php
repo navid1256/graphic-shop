@@ -10,7 +10,9 @@ use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 use InvalidArgumentException;
 
 class PaymentController extends Controller
@@ -67,22 +69,27 @@ class PaymentController extends Controller
         $storedPayment = $request->session()->get('payments.' . $payment);
 
         if (! is_array($storedPayment)) {
-            return redirect()->route('frontend.checkout')
+            return redirect()->route('frontend.payment.failed')
                 ->withErrors(['payment' => 'اطلاعات پرداخت پیدا نشد یا نشست شما منقضی شده است.']);
         }
 
         if ($storedPayment['status'] === PaymentVerification::VERIFIED) {
-            return redirect()->route('frontend.checkout')->with('success', 'این پرداخت قبلاً تأیید شده است.');
+            return redirect()->route('frontend.payment.success', ['payment' => $payment]);
         }
 
-        $callback = $request->validate([
+        $validator = Validator::make($request->query(), [
             'trackId' => ['sometimes', 'string', 'regex:/^[0-9]+$/', 'max:128'],
             'success' => ['sometimes', Rule::in(['0', '1'])],
             'Authority' => ['sometimes', 'string', 'max:128'],
             'Status' => ['sometimes', 'string', 'max:20'],
         ]);
 
-        dd($callback);
+        if ($validator->fails()) {
+            return redirect()->route('frontend.payment.failed')
+                ->withErrors(['payment' => 'اطلاعات بازگشتی درگاه معتبر نیست.']);
+        }
+
+        $callback = $validator->validated();
 
         try {
             $verification = $this->paymentService($storedPayment)->verifyCallback(
@@ -92,7 +99,7 @@ class PaymentController extends Controller
         } catch (PaymentException | InvalidArgumentException $exception) {
             report($exception);
 
-            return redirect()->route('frontend.checkout')
+            return redirect()->route('frontend.payment.failed')
                 ->withErrors(['payment' => 'تأیید پرداخت انجام نشد. در صورت کسر وجه، پیش از پرداخت مجدد وضعیت را پیگیری کنید.']);
         }
 
@@ -101,7 +108,7 @@ class PaymentController extends Controller
             && $verification->paidAmountRials === $storedPayment['amount_rials'];
 
         if (! $verification->isNewlyVerified() && ! $reconciledZibalPayment) {
-            return redirect()->route('frontend.checkout')->withErrors([
+            return redirect()->route('frontend.payment.failed')->withErrors([
                 'payment' => $verification->status === PaymentVerification::ALREADY_VERIFIED
                     ? 'این تراکنش قبلاً در درگاه تأیید شده است؛ وضعیت آن نیاز به پیگیری دارد.'
                     : 'پرداخت لغو شد یا ناموفق بود.',
@@ -112,12 +119,19 @@ class PaymentController extends Controller
         $storedPayment['reference_id'] = $verification->referenceId;
         $request->session()->put('payments.' . $payment, $storedPayment);
 
-        $receipt = $verification->referenceId
-            ? 'کد پیگیری: ' . $verification->referenceId
-            : 'شناسه تراکنش زیبال: ' . $verification->transactionId;
+        return redirect()->route('frontend.payment.success', ['payment' => $payment]);
+    }
 
-        return redirect()->route('frontend.checkout')
-            ->with('success', 'پرداخت با موفقیت تأیید شد. ' . $receipt);
+    public function success(Request $request, string $payment): View|RedirectResponse
+    {
+        $paymentInfo = $request->session()->get('payments.'.$payment);
+
+        if (! is_array($paymentInfo) || ($paymentInfo['status'] ?? null) !== PaymentVerification::VERIFIED) {
+            return redirect()->route('frontend.payment.failed')
+                ->withErrors(['payment' => 'پرداخت تأییدشده‌ای برای این درخواست پیدا نشد.']);
+        }
+
+        return view('frontend.checkout.callback-s', compact('paymentInfo'));
     }
 
     private function paymentService(array $payment): PaymentService

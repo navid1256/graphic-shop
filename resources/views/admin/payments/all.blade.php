@@ -50,7 +50,7 @@
                                             <th>تراکنش</th>
                                             <th>کد رهگیری</th>
                                         </tr>
-                                        @foreach ($payment as $payment)
+                                        @foreach ($payments as $payment)
                                             <tr>
 
                                                 <td>{{ $payment->created_at }}</td>
