@@ -10,7 +10,7 @@ class PaymentsController extends Controller
 {
     public function all()
     {
-        $payment = Payment::paginate(10);
-        return view('admin.payments.all', compact('payment'));
+        $payments = Payment::with('order.user')->paginate(10);
+        return view('admin.payments.all', compact('payments'));
     }
 }
