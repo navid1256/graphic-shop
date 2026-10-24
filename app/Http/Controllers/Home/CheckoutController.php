@@ -14,7 +14,7 @@ class CheckoutController extends Controller
         $customer = $request->validate([
             'family' => ['required', 'string', 'max:120'],
             'mobile' => ['required', 'string', 'regex:/^09[0-9]{9}$/'],
-            'email' => ['nullable', 'email', 'max:254'],
+            'email' => ['required', 'email', 'max:254'],
         ]);
 
         $request->session()->put('checkout.customer', $customer);

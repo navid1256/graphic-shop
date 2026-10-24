@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Mail\SendOrderImages;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -23,6 +26,7 @@ class PaymentControllerTest extends TestCase
             'payments.providers.zarinpal.merchant_id' => '11111111-1111-1111-1111-111111111111',
             'payments.providers.zarinpal.sandbox' => true,
         ]);
+        Storage::fake('product_images');
     }
 
     public static function providers(): array
@@ -53,7 +57,7 @@ class PaymentControllerTest extends TestCase
             : ['Authority' => 'A12345678901234567890', 'Status' => 'OK'];
         $url = route('frontend.payment.callback', ['payment' => $id]).'?'.http_build_query($callback);
         $resultUrl = route('frontend.payment.success', ['payment' => $id]);
-        $this->get($url)->assertRedirect($resultUrl);
+        $this->get($url)->assertRedirect($resultUrl)->assertCookieExpired('basket');
         $this->get($resultUrl)->assertOk()->assertSee('987654')->assertSee('25,000');
         $this->assertSame('verified', session('payments.'.$id.'.status'));
         $this->assertSame('987654', session('payments.'.$id.'.reference_id'));
@@ -87,6 +91,66 @@ class PaymentControllerTest extends TestCase
     {
         $this->post(route('frontend.payment.pay'), $this->customer('zibal'))->assertSessionHasErrors('payment');
         Http::assertNothingSent();
+    }
+
+    public function test_checkout_requires_email_for_source_file_delivery(): void
+    {
+        $customer = ['family' => 'Test Customer', 'mobile' => '09123456789'];
+
+        $this->post(route('frontend.checkout.prepare'), $customer)
+            ->assertSessionHasErrors('email');
+
+        $this->fillBasket();
+        $this->post(route('frontend.payment.pay'), $customer + ['provider' => 'zibal'])
+            ->assertSessionHasErrors('email');
+        Http::assertNothingSent();
+    }
+
+    public function test_successful_purchase_emails_all_source_files_once(): void
+    {
+        Mail::fake();
+        $product = $this->fillBasket();
+        $firstSource = '1/source-first.zip';
+        Storage::disk('product_images')->put($firstSource, 'first source');
+        $product->update(['source_url' => $firstSource]);
+
+        $secondProduct = $product->replicate();
+        $secondProduct->title = 'Second Design';
+        $secondSource = '1/source-second.zip';
+        $secondProduct->source_url = $secondSource;
+        $secondProduct->save();
+        Storage::disk('product_images')->put($secondSource, 'second source');
+        $this->withCookie('basket', json_encode([
+            $product->id => [],
+            $secondProduct->id => [],
+        ]));
+
+        Http::fake([
+            'https://gateway.zibal.ir/v1/request' => Http::response(['result' => 100, 'trackId' => 123456]),
+            'https://gateway.zibal.ir/v1/verify' => Http::response(['result' => 100, 'amount' => 500000, 'refNumber' => '987654']),
+        ]);
+        $this->post(route('frontend.payment.pay'), $this->customer('zibal'));
+        $id = array_key_first(session('payments'));
+        $this->get(route('frontend.payment.callback', ['payment' => $id]).'?trackId=123456&success=1')
+            ->assertRedirect(route('frontend.payment.success', ['payment' => $id]));
+
+        $successUrl = route('frontend.payment.success', ['payment' => $id]);
+        $this->get($successUrl)->assertOk();
+        Mail::assertSent(SendOrderImages::class, function ($mail) use ($firstSource, $secondSource) {
+            $attachmentNames = array_map(
+                fn ($attachment) => $attachment->as,
+                $mail->attachments(),
+            );
+            $html = $mail->render();
+
+            return $mail->hasTo('test@example.com')
+                && str_contains($html, '<html lang="fa" dir="rtl">')
+                && str_contains($html, 'فایل منبع محصولات خریداری‌شده')
+                && $attachmentNames === [basename($firstSource), basename($secondSource)];
+        });
+
+        $this->get($successUrl)->assertOk();
+        Mail::assertSentCount(1);
     }
 
     public function test_unknown_provider_is_rejected(): void
@@ -190,7 +254,8 @@ class PaymentControllerTest extends TestCase
         $this->post(route('frontend.payment.pay'), $this->customer('zibal'));
         $id = array_key_first(session('payments'));
         $this->get(route('frontend.payment.callback', ['payment' => $id]).'?trackId=123456&success=0')
-            ->assertRedirect(route('frontend.payment.failed'));
+            ->assertRedirect(route('frontend.payment.failed'))
+            ->assertCookieMissing('basket');
         $this->get(route('frontend.payment.failed'))->assertOk()->assertSee('پرداخت لغو شد یا ناموفق بود.');
         Http::assertSentCount(1);
     }
@@ -211,15 +276,19 @@ class PaymentControllerTest extends TestCase
         return ['family' => 'Test Customer', 'mobile' => '09123456789', 'email' => 'test@example.com', 'provider' => $provider];
     }
 
-    private function fillBasket(): void
+    private function fillBasket(): Product
     {
         $category = Category::create(['title' => 'Designs', 'slug' => 'designs']);
         $owner = User::factory()->create(['mobile' => '09111111111', 'role' => 'user']);
         $product = Product::create([
             'title' => 'Design', 'price' => 25000, 'description' => 'Design',
             'category_id' => $category->id, 'owner_id' => $owner->id,
+            'source_url' => '1/source.zip',
         ]);
+        Storage::disk('product_images')->put('1/source.zip', 'source');
         $this->withCookie('basket', json_encode([$product->id => ['price' => 1]]));
+
+        return $product;
     }
 
     private function fakeGateway(string $provider): void

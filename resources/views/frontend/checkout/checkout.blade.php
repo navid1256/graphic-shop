@@ -115,8 +115,8 @@
                                         </div>
 
                                         <div class="bor8 bg0 m-b-22">
-                                            <label for="payment-email" class="stext-111 p-lr-15">ایمیل (اختیاری)</label>
-                                            <input id="payment-email" class="stext-111 cl8 plh3 size-111 p-lr-15" type="email" name="email" value="{{ old('email', session('checkout.customer.email')) }}" autocomplete="email" maxlength="254">
+                                            <label for="payment-email" class="stext-111 p-lr-15">ایمیل (الزامی برای دریافت فایل‌ها)</label>
+                                            <input id="payment-email" class="stext-111 cl8 plh3 size-111 p-lr-15" type="email" name="email" value="{{ old('email', session('checkout.customer.email')) }}" autocomplete="email" maxlength="254" required>
                                         </div>
 
                                     </div>

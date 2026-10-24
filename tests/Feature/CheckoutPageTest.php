@@ -151,7 +151,11 @@ class CheckoutPageTest extends TestCase
             ->assertRedirect(route('frontend.checkout'))->assertSessionHasErrors(['family', 'mobile']);
         $this->assertNull(session('checkout.customer'));
 
-        $this->post(route('frontend.checkout.prepare'), ['family' => 'Test Customer', 'mobile' => '09123456789'])
+        $this->post(route('frontend.checkout.prepare'), [
+            'family' => 'Test Customer',
+            'mobile' => '09123456789',
+            'email' => 'test@example.com',
+        ])
             ->assertRedirect(route('frontend.checkout.select'));
         $this->get(route('frontend.checkout.select'))
             ->assertRedirect(route('frontend.checkout'))->assertSessionHasErrors('payment');

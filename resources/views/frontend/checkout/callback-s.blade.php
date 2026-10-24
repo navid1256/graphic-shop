@@ -33,6 +33,11 @@
                             شناسه تراکنش: <bdi>{{ $paymentInfo['transaction_id'] }}</bdi>
                         @endif
                     </p>
+                    @if ($emailDeliveryError)
+                        <p class="pt-4 text-danger" role="alert">{{ $emailDeliveryError }}</p>
+                    @else
+                        <p class="pt-4 text-success" role="status">فایل‌های خرید به ایمیل شما ارسال شدند.</p>
+                    @endif
                 </div>
                 <div class="col-12 m-b-50 mt-5">
                     <a href="{{ route('frontend.products.all') }}" class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04">بازگشت به فروشگاه</a>

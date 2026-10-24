@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SendOrderImages;
 use App\Models\Product;
 use App\Services\Payment\Exceptions\PaymentException;
 use App\Services\Payment\Requests\PaymentRequest;
@@ -9,8 +10,11 @@ use App\Services\Payment\Results\PaymentVerification;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use InvalidArgumentException;
@@ -22,7 +26,7 @@ class PaymentController extends Controller
         $data = $request->validate([
             'family' => ['required', 'string', 'max:120'],
             'mobile' => ['required', 'string', 'regex:/^09[0-9]{9}$/'],
-            'email' => ['nullable', 'email', 'max:254'],
+            'email' => ['required', 'email', 'max:254'],
             'provider' => ['sometimes', Rule::in([PaymentService::ZIBAL, PaymentService::ZARINPAL])],
         ]);
 
@@ -43,6 +47,7 @@ class PaymentController extends Controller
             'amount_rials' => (int) $totalTomans * 10,
             'callback_url' => route('frontend.payment.callback', ['payment' => $paymentId]),
             'description' => 'پرداخت سبد خرید برای ' . $data['family'],
+            'family' => $data['family'],
             'mobile' => $data['mobile'],
             'email' => $data['email'] ?? null,
             'product_ids' => $products->modelKeys(),
@@ -74,7 +79,8 @@ class PaymentController extends Controller
         }
 
         if ($storedPayment['status'] === PaymentVerification::VERIFIED) {
-            return redirect()->route('frontend.payment.success', ['payment' => $payment]);
+            return redirect()->route('frontend.payment.success', ['payment' => $payment])
+                ->withCookie(Cookie::forget('basket'));
         }
 
         $validator = Validator::make($request->query(), [
@@ -119,19 +125,46 @@ class PaymentController extends Controller
         $storedPayment['reference_id'] = $verification->referenceId;
         $request->session()->put('payments.' . $payment, $storedPayment);
 
-        return redirect()->route('frontend.payment.success', ['payment' => $payment]);
+        return redirect()->route('frontend.payment.success', ['payment' => $payment])
+            ->withCookie(Cookie::forget('basket'));
     }
 
     public function success(Request $request, string $payment): View|RedirectResponse
     {
-        $paymentInfo = $request->session()->get('payments.'.$payment);
+        $paymentInfo = $request->session()->get('payments.' . $payment);
 
         if (! is_array($paymentInfo) || ($paymentInfo['status'] ?? null) !== PaymentVerification::VERIFIED) {
             return redirect()->route('frontend.payment.failed')
                 ->withErrors(['payment' => 'پرداخت تأییدشده‌ای برای این درخواست پیدا نشد.']);
         }
 
-        return view('frontend.checkout.callback-s', compact('paymentInfo'));
+        $emailDeliveryError = null;
+
+        if (empty($paymentInfo['source_email_sent'])) {
+            $products = Product::whereIn('id', $paymentInfo['product_ids'])->get(['source_url']);
+            $sourceFiles = $products->pluck('source_url')->filter()->values();
+            $allSourcesAvailable = $products->count() === count($paymentInfo['product_ids'])
+                && $sourceFiles->count() === $products->count()
+                && $sourceFiles->every(
+                    fn (string $path): bool => Storage::disk('product_images')->exists($path)
+                );
+
+            if (! $allSourcesAvailable) {
+                $emailDeliveryError = 'پرداخت با موفقیت انجام شد، اما ارسال فایل‌ها انجام نشد. لطفاً با پشتیبانی تماس بگیرید.';
+                report(new \RuntimeException(
+                    'A purchased product source file is missing; order source email was not sent.'
+                ));
+            } else {
+                Mail::to($paymentInfo['email'])->send(
+                    new SendOrderImages($sourceFiles->all(), $paymentInfo['family'])
+                );
+
+                $paymentInfo['source_email_sent'] = true;
+                $request->session()->put('payments.'.$payment, $paymentInfo);
+            }
+        }
+
+        return view('frontend.checkout.callback-s', compact('paymentInfo', 'emailDeliveryError'));
     }
 
     private function paymentService(array $payment): PaymentService
