@@ -56,7 +56,9 @@
                                                 <td>{{ $order->amount }} تومان</td>
                                                 <td>{{ $order->ref_code }}</td>
                                                 <td>
-                                                    <span class="badge bg-success">موفق</span>
+                                                    <span class="badge {{ $order->status === 'paid' ? 'bg-success' : 'bg-danger' }}">
+                                                        {{ $order->status === 'paid' ? 'پرداخت‌شده' : 'پرداخت‌نشده' }}
+                                                    </span>
                                                 </td>
                                                 <td>{{ $order->created_at->format('Y-m-d') }}</td>
                                                 <td>

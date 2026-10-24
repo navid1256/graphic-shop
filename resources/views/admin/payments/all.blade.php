@@ -50,18 +50,20 @@
                                             <th>تراکنش</th>
                                             <th>کد رهگیری</th>
                                         </tr>
-                                        @foreach ($payment as $payment)
+                                        @foreach ($payments as $payment)
                                             <tr>
 
                                                 <td>{{ $payment->created_at }}</td>
-                                                <td>{{ $payment->amount }}</td>
+                                                <td>{{ $payment->order->amount }}</td>
                                                 <td>{{ $payment->order_id }}</td>
                                                 <td>{{ $payment->order->user->name }}</td>
                                                 <td>
                                                     {{ $payment->gateway }}
                                                 </td>
                                                 <td>
-                                                    <span class="badge bg-success">{{ $payment->status }}</span>
+                                                    <span class="badge {{ $payment->status === 'paid' ? 'bg-success' : 'bg-danger' }}">
+                                                        {{ $payment->status === 'paid' ? 'پرداخت‌شده' : 'پرداخت‌نشده' }}
+                                                    </span>
                                                 </td>
                                                 <td>{{ $payment->res_id }}</td>
                                             </tr>
@@ -77,7 +79,7 @@
                         <!-- /.card -->
                         <div class="d-flex justify-content-center">
                             <ul class="pagination mt-3">
-                                {{ $payment->links() }}
+                                {{ $payments->links() }}
                             </ul>
                         </div>
                     </div>

@@ -6,14 +6,39 @@ use App\Http\Controllers\Admin\CategoriesController;
 use App\Http\Controllers\Admin\ProductsController;
 use App\Http\Controllers\Home\HomeController;
 use App\Http\Controllers\Home\BascketController;
+use App\Http\Controllers\Home\CheckoutController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\Admin\UsersController;
 use App\Http\Controllers\Home\ProductsController as HomeProductsController;
+use \App\Http\Controllers\Admin\PaymentsController;
+use \App\Http\Controllers\Admin\OrdersController;
 
 Route::prefix('')->group(function () {
     Route::get('', [HomeProductsController::class, 'index'])->name('frontend.products.all');
-    Route::get('product/{product_id}', [HomeProductsController::class, 'show'])->name('frontend.products.show');
-    Route::post('basket/add/{product_id}', [BascketController::class, 'addToBascket'])->name('frontend.basket.add');
 
+    Route::prefix('product')->group(function () {
+        Route::get('{product_id}', [HomeProductsController::class, 'show'])->name('frontend.products.show');
+    });
+
+    Route::prefix('basket')->group(function () {
+        Route::post('add/{product_id}', [BascketController::class, 'addToBascket'])->name('frontend.basket.add');
+        Route::delete('remove/{product_id}', [BascketController::class, 'removeFromBascket'])->name('frontend.basket.remove');
+    });
+
+    Route::prefix('checkout')->group(function () {
+        Route::get('', [CheckoutController::class, 'show'])->name('frontend.checkout');
+        Route::post('select', [CheckoutController::class, 'prepareSelection'])->name('frontend.checkout.prepare');
+        Route::get('select', [CheckoutController::class, 'select'])->name('frontend.checkout.select');
+    });
+
+    Route::prefix('payment')->group(function () {
+        Route::post('', [PaymentController::class, 'pay'])->name('frontend.payment.pay');
+        Route::get('callback/{payment}', [PaymentController::class, 'callback'])
+            ->whereUuid('payment')->name('frontend.payment.callback');
+        Route::get('callback-s/{payment}', [PaymentController::class, 'success'])
+            ->whereUuid('payment')->name('frontend.payment.success');
+        Route::view('callback-f', 'frontend.checkout.callback-f')->name('frontend.payment.failed');
+    });
 });
 
 Route::prefix('admin')->group(function () {
@@ -51,10 +76,10 @@ Route::prefix('admin')->group(function () {
     });
 
     Route::prefix('orders')->group(function () {
-        Route::get('', [\App\Http\Controllers\Admin\OrdersController::class, 'all'])->name('admin.orders.all');
+        Route::get('', [OrdersController::class, 'all'])->name('admin.orders.all');
     });
 
     Route::prefix('payments')->group(function () {
-        Route::get('', [\App\Http\Controllers\Admin\PaymentsController::class, 'all'])->name('admin.payments.all');
+        Route::get('', [PaymentsController::class, 'all'])->name('admin.payments.all');
     });
 });

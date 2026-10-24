@@ -119,12 +119,12 @@ class FrontendProductPagesTest extends TestCase
         ]);
         $paidOrder = Order::create([
             'amount' => 30000,
-            'status' => 'paied',
+            'status' => 'paid',
             'user_id' => $user->id,
         ]);
         $unpaidOrder = Order::create([
             'amount' => 10000,
-            'status' => 'unpaied',
+            'status' => 'unpaid',
             'user_id' => $user->id,
         ]);
 

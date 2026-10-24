@@ -36,7 +36,7 @@ class OrderByFilter
             ->selectRaw('COUNT(*)')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->whereColumn('order_items.product_id', 'products.id')
-            ->where('orders.status', 'paied');
+            ->where('orders.status', 'paid');
 
         return $query->orderByDesc($paidSalesCount);
     }

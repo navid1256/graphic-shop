@@ -1062,7 +1062,16 @@ Input, textarea : 14px/1.6 '', Arial, sans-serif;
 
 /*---------------------------------------------*/
 .header-cart-item-txt {
-  width: calc(100% - 80px);
+  width: calc(100% - 124px);
+  overflow-wrap: anywhere;
+}
+
+.header-cart-item-remove {
+  width: 44px;
+}
+
+.header-cart-item-remove button {
+  min-height: 44px;
 }
 
 .header-cart-item-name {
@@ -1974,6 +1983,69 @@ input.num-product::-webkit-inner-spin-button {
   width: 120px;
   font-size: 16px;
 }
+
+.gateway-options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 1rem;
+}
+
+.gateway-option {
+  position: relative;
+}
+
+.gateway-option input {
+  position: absolute;
+  inset-inline-start: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1.25rem;
+  height: 1.25rem;
+  accent-color: #333;
+}
+
+.gateway-label {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  height: 100%;
+  margin: 0;
+  padding: 1.5rem;
+  padding-inline-start: 3.25rem;
+  border: 2px solid #aaa;
+  border-radius: 4px;
+  color: #333;
+  cursor: pointer;
+}
+
+.gateway-description {
+  display: block;
+  margin-block-start: 0.5rem;
+  color: #555;
+}
+
+.gateway-option input:checked + .gateway-label {
+  border-color: #333;
+  background-color: #f5f5f5;
+}
+
+.gateway-option input:focus-visible + .gateway-label {
+  outline: 3px solid #333;
+  outline-offset: 3px;
+}
+
+.table-shopping-cart .checkout-remove-column {
+  width: 1%;
+  white-space: nowrap;
+}
+
+.checkout-remove-form,
+.checkout-remove-form button {
+  width: 42px;
+  height: 42px;
+  padding: 0;
+}
+
 th{
     text-align: right !important;
 }

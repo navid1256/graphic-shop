@@ -56,6 +56,6 @@ class CategoriesController extends Controller
 
         Session::flash('success', 'دسته بندی با موفقیت بروزرسانی شد.');
 
-        return to_route('admin.categories.edit', $category_id);
+        return to_route('admin.categories.all');
     }
 }
