@@ -1,3 +1,9 @@
+@php
+    $shopNumber = static fn ($value) => strtr(number_format($value, 0, '.', '٬'), [
+        '0' => '۰', '1' => '۱', '2' => '۲', '3' => '۳', '4' => '۴',
+        '5' => '۵', '6' => '۶', '7' => '۷', '8' => '۸', '9' => '۹',
+    ]);
+@endphp
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
@@ -66,8 +72,8 @@
                 <nav class="limiter-menu-desktop container">
 
                     <!-- Logo desktop -->
-                    <a href="/" class="logo">
-                        <img src="{{ asset('images/icons/logo-01.png') }}" alt="IMG-LOGO">
+                    <a href="{{ route('frontend.products.all') }}" class="logo" aria-label="گرافیک شاپ، صفحه اصلی">
+                        <img src="{{ asset('images/icons/Graphic Shop Logo.png') }}" alt="Graphic Shop" width="2172" height="724">
                     </a>
 
                     <!-- Menu desktop -->
@@ -84,14 +90,14 @@
                     </div>
 
                     <!-- Icon header -->
-                    <div class="wrap-icon-header flex-w flex-r-m">
-                        <div class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 js-show-modal-search">
-                            <i class="zmdi zmdi-search"></i>
-                        </div>
-
-                        <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="{{ $basketCount }}" aria-label="سبد خرید، {{ $basketCount }} محصول"
-                            aria-controls="header-basket">
+                    <div class="wrap-icon-header flex-w flex-r-m shop-header-actions">
+                        <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 p-l-22 p-r-11 icon-header-noti js-show-cart" data-notify="{{ $shopNumber($basketCount) }}" aria-label="سبد خرید، {{ $shopNumber($basketCount) }} محصول"
+                            aria-controls="header-basket" aria-haspopup="dialog" aria-expanded="false">
                             <i class="zmdi zmdi-shopping-cart" aria-hidden="true"></i>
+                        </button>
+                        <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 icon-header-noti" data-open-wishlist data-notify="۰"
+                            aria-label="علاقه‌مندی‌ها، ۰ محصول" aria-controls="header-wishlist" aria-expanded="false" aria-haspopup="dialog">
+                            <i class="zmdi zmdi-favorite-outline" aria-hidden="true"></i>
                         </button>
                     </div>
                 </nav>
@@ -102,23 +108,20 @@
         <div class="wrap-header-mobile">
             <!-- Logo moblie -->
             <div class="logo-mobile">
-                <a href="index.html"><img src="{{ asset('images/icons/logo-01.png') }}" alt="IMG-LOGO"></a>
+                <a href="{{ route('frontend.products.all') }}" aria-label="گرافیک شاپ، صفحه اصلی"><img src="{{ asset('images/icons/Graphic Shop Logo.png') }}" alt="Graphic Shop" width="2172" height="724"></a>
             </div>
 
             <!-- Icon header -->
-            <div class="wrap-icon-header flex-w flex-r-m m-l-15">
-                <div class="icon-header-item cl2 hov-cl1 trans-04 p-l-11 js-show-modal-search">
-                    <i class="zmdi zmdi-search"></i>
-                </div>
-
-                <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="{{ $basketCount }}" aria-label="سبد خرید، {{ $basketCount }} محصول"
-                    aria-controls="header-basket">
+            <div class="wrap-icon-header flex-w flex-r-m m-l-15 shop-header-actions">
+                <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti js-show-cart" data-notify="{{ $shopNumber($basketCount) }}" aria-label="سبد خرید، {{ $shopNumber($basketCount) }} محصول"
+                    aria-controls="header-basket" aria-haspopup="dialog" aria-expanded="false">
                     <i class="zmdi zmdi-shopping-cart" aria-hidden="true"></i>
                 </button>
 
-                <a href="#" class="dis-block icon-header-item cl2 hov-cl1 trans-04 p-r-11 p-l-10 icon-header-noti" data-notify="0">
-                    <i class="zmdi zmdi-favorite-outline"></i>
-                </a>
+                <button type="button" class="icon-header-item cl2 hov-cl1 trans-04 icon-header-noti" data-open-wishlist data-notify="۰"
+                    aria-label="علاقه‌مندی‌ها، ۰ محصول" aria-controls="header-wishlist" aria-expanded="false" aria-haspopup="dialog">
+                    <i class="zmdi zmdi-favorite-outline" aria-hidden="true"></i>
+                </button>
             </div>
 
             <!-- Button show menu -->
@@ -142,86 +145,92 @@
             </ul>
         </div>
 
-        <!-- Modal Search -->
-        <div class="modal-search-header flex-c-m trans-04 js-hide-modal-search">
-            <div class="container-search-header">
-                <button class="flex-c-m btn-hide-modal-search trans-04 js-hide-modal-search">
-                    <img src="{{ asset('images/icons/icon-close2.png') }}" alt="CLOSE">
-                </button>
-
-                <form class="wrap-search-header flex-w p-l-15" action="{{ route('frontend.products.all') }}" method="GET">
-                    <button type="submit" class="flex-c-m trans-04" aria-label="جستجو در محصولات">
-                        <i class="zmdi zmdi-search" aria-hidden="true"></i>
-                    </button>
-                    <label for="header-product-search" class="visually-hidden">جستجو در محصولات</label>
-                    <input id="header-product-search" class="plh3" type="text" name="search" placeholder="متن خود را اینجا بنویسید ...">
-                </form>
-            </div>
-        </div>
     </header>
 
     <!-- Cart -->
-    <div class="wrap-header-cart js-panel-cart" id="header-basket">
-        <div class="s-full js-hide-cart"></div>
-
-        <div class="header-cart flex-col-l p-l-65 p-r-25">
-            <div class="header-cart-title flex-w flex-sb-m p-b-8">
-                <span class="mtext-103 cl2">
-                    سبد خرید
-                </span>
-
-                <button type="button" class="fs-35 lh-10 cl2 p-lr-5 pointer hov-cl1 trans-04 js-hide-cart" aria-label="بستن سبد خرید">
+    <dialog class="shop-drawer cart-drawer js-panel-cart" id="header-basket" aria-labelledby="basket-title" closedby="any">
+            <div class="shop-drawer-heading">
+                <h2 id="basket-title">سبد خرید <span class="shop-drawer-count">{{ $shopNumber($basketCount) }}</span></h2>
+                <button type="button" class="shop-drawer-icon-button js-hide-cart" aria-label="بستن سبد خرید" autofocus>
                     <i class="zmdi zmdi-close" aria-hidden="true"></i>
                 </button>
             </div>
 
-            <div class="header-cart-content flex-w js-pscroll">
-                <ul class="header-cart-wrapitem w-full">
-                    @forelse ($basketProducts as $basketProduct)
+            <div class="shop-drawer-content {{ $basketProducts->isEmpty() ? 'shop-drawer-content-empty' : '' }}">
+                @if ($basketProducts->isEmpty())
+                    <div class="shop-drawer-empty">
+                        <i class="zmdi zmdi-shopping-cart" aria-hidden="true"></i>
+                        <h3>سبد خرید شما خالی است</h3>
+                        <p>طرح موردعلاقه‌تان را پیدا کنید و به سبد خرید اضافه کنید.</p>
+                    </div>
+                @else
+                <ul class="wishlist-items" aria-label="محصولات سبد خرید">
+                    @foreach ($basketProducts as $basketProduct)
                         @php
                             $basketImage = $basketProduct->thumbnail_url ? \Illuminate\Support\Facades\Storage::disk('product_images')->url($basketProduct->thumbnail_url) : asset('images/product-01.jpg');
                         @endphp
-                        <li class="header-cart-item flex-w flex-t m-b-12">
-                            <div class="header-cart-item-img">
-                                <img src="{{ $basketImage }}" alt="{{ $basketProduct->title }}">
+                        <li class="wishlist-item">
+                            <div class="wishlist-item-image">
+                                <img src="{{ $basketImage }}" alt="{{ $basketProduct->title }}" width="72" height="88">
                             </div>
 
-                            <div class="header-cart-item-txt p-t-8">
-                                <a href="{{ route('frontend.products.show', $basketProduct->id) }}" class="header-cart-item-name m-b-18 hov-cl1 trans-04">
+                            <div class="wishlist-item-details">
+                                <a href="{{ route('frontend.products.show', $basketProduct->id) }}" class="wishlist-item-title">
                                     {{ $basketProduct->title }}
                                 </a>
 
-                                <span class="header-cart-item-info">
-                                    {{ number_format($basketProduct->price) }} تومان
+                                <span class="wishlist-item-price">
+                                    {{ $shopNumber($basketProduct->price) }} تومان
                                 </span>
                             </div>
 
-                            <form action="{{ route('frontend.basket.remove', $basketProduct->id) }}" method="POST" class="header-cart-item-remove p-t-8">
+                            <form action="{{ route('frontend.basket.remove', $basketProduct->id) }}" method="POST" class="cart-item-remove">
                                 @csrf
                                 @method('DELETE')
-                                <button type="submit" class="flex-c-m w-full fs-22 cl2 hov-cl1 trans-04" aria-label="حذف {{ $basketProduct->title }} از سبد خرید" title="حذف از سبد خرید">
+                                <button type="submit" class="shop-drawer-icon-button" aria-label="حذف {{ $basketProduct->title }} از سبد خرید" title="حذف از سبد خرید">
                                     <i class="zmdi zmdi-delete" aria-hidden="true"></i>
                                 </button>
                             </form>
                         </li>
-                    @empty
-                        <li class="stext-102 cl6 p-tb-20">
-                            سبد خرید شما خالی است.
-                        </li>
-                    @endforelse
+                    @endforeach
                 </ul>
-
-                <div class="w-full">
-                    <div class="header-cart-total w-full p-tb-40">
-                        جمع کل: {{ number_format($basketTotal) }} تومان
-                    </div>
-
-                    <div class="header-cart-buttons flex-w w-full">
-                        <a href="{{ route('frontend.checkout') }}" class="flex-c-m stext-101 cl0 size-107 w-100 bg3 bor2 hov-btn3 p-lr-15 trans-04 m-l-8 m-b-10">
-                            مشاهده سبد خرید و پرداخت
-                        </a>
-                    </div>
-                </div>
+                @endif
             </div>
+
+                <div class="shop-drawer-footer">
+                    @if ($basketProducts->isNotEmpty())
+                    <div class="cart-total">
+                        <span>جمع کل</span>
+                        <strong>{{ $shopNumber($basketTotal) }} <span>تومان</span></strong>
+                    </div>
+                    <a href="{{ route('frontend.checkout') }}" class="shop-drawer-primary">ادامهٔ خرید و پرداخت <i class="zmdi zmdi-arrow-left" aria-hidden="true"></i></a>
+                    <button type="button" class="shop-drawer-secondary js-hide-cart">ادامهٔ مشاهدهٔ محصولات</button>
+                    @else
+                    <a href="{{ route('frontend.products.all') }}" class="shop-drawer-primary">مشاهدهٔ محصولات <i class="zmdi zmdi-arrow-left" aria-hidden="true"></i></a>
+                    @endif
+                </div>
+    </dialog>
+
+    <dialog id="header-wishlist" class="shop-drawer wishlist-drawer" aria-labelledby="wishlist-title" aria-describedby="wishlist-description" closedby="any">
+        <div class="shop-drawer-heading">
+            <h2 id="wishlist-title">علاقه‌مندی‌ها <span class="shop-drawer-count" data-wishlist-count>۰</span></h2>
+            <button type="button" class="shop-drawer-icon-button" data-close-wishlist aria-label="بستن علاقه‌مندی‌ها" autofocus>
+                <i class="zmdi zmdi-close" aria-hidden="true"></i>
+            </button>
         </div>
-    </div>
+        <p id="wishlist-description" class="shop-drawer-description">طرح‌های موردعلاقه‌تان را برای خرید بعدی نگه دارید.</p>
+        <p class="wishlist-feedback" data-wishlist-feedback role="status" aria-live="polite" aria-atomic="true"></p>
+        <div class="shop-drawer-content" data-wishlist-content>
+            <div class="shop-drawer-empty" data-wishlist-empty>
+                <i class="zmdi zmdi-favorite-outline" aria-hidden="true"></i>
+                <p>هنوز محصولی به علاقه‌مندی‌ها اضافه نکرده‌اید.</p>
+                <p>روی قلب کنار هر محصول بزنید.</p>
+            </div>
+            <ul class="wishlist-items" data-wishlist-items aria-label="محصولات موردعلاقه"></ul>
+        </div>
+        <div class="shop-drawer-footer">
+            <p>این فهرست در همین مرورگر ذخیره می‌شود.</p>
+            <button type="button" class="shop-drawer-primary" data-close-wishlist>ادامهٔ مشاهدهٔ محصولات</button>
+        </div>
+    </dialog>
+    <p class="wishlist-status" data-wishlist-status role="status" aria-live="polite" aria-atomic="true"></p>

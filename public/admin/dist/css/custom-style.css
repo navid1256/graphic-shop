@@ -64,6 +64,89 @@ body {
     font-family: 'Vazir', sans-serif !important;
 }
 
+.admin-brand {
+    --brand-motion-duration: 240ms;
+    --brand-motion-easing: cubic-bezier(.16, 1, .3, 1);
+    position: relative;
+    display: block;
+    flex: 0 0 80px;
+    width: 100%;
+    height: 80px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+.admin-brand:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: -3px;
+}
+
+.admin-brand-full,
+.admin-brand-mini {
+    position: absolute;
+    inset: 0;
+    display: block;
+    overflow: hidden;
+    pointer-events: none;
+    transition: opacity var(--brand-motion-duration) ease,
+                transform var(--brand-motion-duration) var(--brand-motion-easing);
+}
+
+.admin-brand-full {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.admin-brand-mini {
+    opacity: 0;
+    transform: translateX(10px) scale(.9);
+}
+
+/* Center the artwork; only the PNGs' transparent padding falls outside the frame. */
+.admin-brand img {
+    position: absolute;
+    height: auto;
+    max-width: none;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.admin-brand-full img { width: 220px; }
+.admin-brand-mini img { width: 56px; }
+
+@media (min-width: 992px) {
+    .sidebar-mini.sidebar-collapse .main-sidebar:not(:hover):not(:focus-within) .admin-brand-full {
+        opacity: 0;
+        transform: translateX(16px);
+    }
+
+    .sidebar-mini.sidebar-collapse .main-sidebar:not(:hover):not(:focus-within) .admin-brand-mini {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+    }
+
+    .sidebar-mini.sidebar-collapse .main-sidebar:is(:hover, :focus-within) {
+        width: 300px;
+    }
+
+    .sidebar-mini.sidebar-collapse .main-sidebar:focus-within .nav-sidebar .nav-link p {
+        display: inline-block;
+        margin-left: 0;
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .admin-brand { --brand-motion-duration: 80ms; }
+
+    .main-sidebar .admin-brand-full,
+    .main-sidebar .admin-brand-mini {
+        transform: none !important;
+    }
+}
+
 .ltr {
     direction:ltr;
 }
@@ -196,6 +279,14 @@ ul {
     right:0;
     padding: 25px;
     width: 300px;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-sidebar > .sidebar {
+    flex: 1;
+    min-height: 0;
+    height: auto;
 }
 
 /* Cards */
