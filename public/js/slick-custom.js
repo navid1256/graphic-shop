@@ -19,15 +19,15 @@
             $(slick1).on('init', function(){
                 var layerCurrentItem = $(itemSlick1[0]).find('.layer-slick1');
 
-                for(var i=0; i<actionSlick1.length; i++) {
-                    clearTimeout(actionSlick1[i]);
+                for (const action of actionSlick1) {
+                    clearTimeout(action);
                 }
 
                 $(layerSlick1).each(function(){
                     $(this).removeClass($(this).data('appear') + ' visible-true');
                 });
 
-                for(var i=0; i<layerCurrentItem.length; i++) {
+                for (let i = 0; i < layerCurrentItem.length; i++) {
                     actionSlick1[i] = setTimeout(function(index) {
                         $(layerCurrentItem[index]).addClass($(layerCurrentItem[index]).data('appear') + ' visible-true');
                     },$(layerCurrentItem[i]).data('delay'),i); 
@@ -70,15 +70,15 @@
 
                 var layerCurrentItem = $(itemSlick1[currentSlide]).find('.layer-slick1');
 
-                for(var i=0; i<actionSlick1.length; i++) {
-                    clearTimeout(actionSlick1[i]);
+                for (const action of actionSlick1) {
+                    clearTimeout(action);
                 }
 
                 $(layerSlick1).each(function(){
                     $(this).removeClass($(this).data('appear') + ' visible-true');
                 });
 
-                for(var i=0; i<layerCurrentItem.length; i++) {
+                for (let i = 0; i < layerCurrentItem.length; i++) {
                     actionSlick1[i] = setTimeout(function(index) {
                         $(layerCurrentItem[index]).addClass($(layerCurrentItem[index]).data('appear') + ' visible-true');
                     },$(layerCurrentItem[i]).data('delay'),i); 
