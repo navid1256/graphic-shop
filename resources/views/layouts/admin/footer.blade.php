@@ -20,6 +20,16 @@
     ClassicEditor
         .create(document.querySelector('#editor'))
         .then(editor => {
+            const descriptionLabel = document.getElementById('product-description-label');
+            if (descriptionLabel) {
+                editor.ui.view.editable.element.setAttribute('aria-labelledby', descriptionLabel.id);
+            }
+            editor.ui.view.toolbar.element.querySelectorAll('button').forEach(button => {
+                const label = button.querySelector('.ck-button__label');
+                if (label && label.textContent.trim() && !button.hasAttribute('aria-label')) {
+                    button.setAttribute('aria-label', label.textContent.trim());
+                }
+            });
             console.log(editor);
         })
         .catch(error => {

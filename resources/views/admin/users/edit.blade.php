@@ -35,26 +35,26 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>نام و نام خانوادگی</label>
-                                                <input type="text" class="form-control" name="name" placeholder="نام و نام خانوادگی را وارد کنید" value="{{ old('name', $user->name) }}">
+                                                <label for="admin-user-edit-name">نام و نام خانوادگی</label>
+                                                <input id="admin-user-edit-name" type="text" class="form-control" name="name" placeholder="نام و نام خانوادگی را وارد کنید" value="{{ old('name', $user->name) }}">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>ایمیل</label>
-                                                <input type="email" class="form-control" name="email" placeholder="ایمیل را وارد کنید" value="{{ old('email', $user->email) }}">
+                                                <label for="admin-user-edit-email">ایمیل</label>
+                                                <input id="admin-user-edit-email" type="email" class="form-control" name="email" placeholder="ایمیل را وارد کنید" value="{{ old('email', $user->email) }}">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>موبایل</label>
-                                                <input type="text" class="form-control" name="mobile" placeholder="موبایل را وارد کنید" value="{{ old('mobile', $user->mobile) }}">
+                                                <label for="admin-user-edit-mobile">موبایل</label>
+                                                <input id="admin-user-edit-mobile" type="text" class="form-control" name="mobile" placeholder="موبایل را وارد کنید" value="{{ old('mobile', $user->mobile) }}">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>نقش کاربری</label>
-                                                <select class="form-control" name="role">
+                                                <label for="admin-user-edit-role">نقش کاربری</label>
+                                                <select id="admin-user-edit-role" class="form-control" name="role">
                                                     <option value="0" disabled selected>انتخاب نقش</option>
                                                     <option value="user" {{ old('role', $user->role) == 'user' ? 'selected' : '' }}>کاربر عادی</option>
                                                     {{-- <option value="2">طراح و فروشنده</option> --}}

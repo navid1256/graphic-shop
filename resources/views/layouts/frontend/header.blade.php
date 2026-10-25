@@ -150,10 +150,11 @@
                 </button>
 
                 <form class="wrap-search-header flex-w p-l-15" action="{{ route('frontend.products.all') }}" method="GET">
-                    <button class="flex-c-m trans-04">
-                        <i class="zmdi zmdi-search"></i>
+                    <button type="submit" class="flex-c-m trans-04" aria-label="جستجو در محصولات">
+                        <i class="zmdi zmdi-search" aria-hidden="true"></i>
                     </button>
-                    <input class="plh3" type="text" name="search" placeholder="متن خود را اینجا بنویسید ...">
+                    <label for="header-product-search" class="visually-hidden">جستجو در محصولات</label>
+                    <input id="header-product-search" class="plh3" type="text" name="search" placeholder="متن خود را اینجا بنویسید ...">
                 </form>
             </div>
         </div>

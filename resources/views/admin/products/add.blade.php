@@ -33,14 +33,14 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>عنوان</label>
-                                                <input type="text" class="form-control" name="title" placeholder="نامک را وارد کنید">
+                                                <label for="admin-product-create-title">عنوان</label>
+                                                <input id="admin-product-create-title" type="text" class="form-control" name="title" placeholder="نامک را وارد کنید">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>دسته بندی</label>
-                                                <select class="form-control" name="category_id">
+                                                <label for="admin-product-create-category-id">دسته بندی</label>
+                                                <select id="admin-product-create-category-id" class="form-control" name="category_id">
                                                     <option value="" disabled selected>انتخاب دسته بندی</option>
                                                     @foreach ($categories as $category)
                                                         <option value="{{ $category->id }}">{{ $category->title }}</option>
@@ -50,34 +50,34 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>قیمت</label>
-                                                <input type="text" class="form-control" name="price" placeholder="قیمت را وارد کنید">
+                                                <label for="admin-product-create-price">قیمت</label>
+                                                <input id="admin-product-create-price" type="text" class="form-control" name="price" placeholder="قیمت را وارد کنید">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>تصویر شاخص</label>
-                                                <input class="form-control" type="file" name="thumbnail_url">
+                                                <label for="admin-product-create-thumbnail-url">تصویر شاخص</label>
+                                                <input id="admin-product-create-thumbnail-url" class="form-control" type="file" name="thumbnail_url">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>تصویر محصول</label>
-                                                <input class="form-control" type="file" name="demo_url">
+                                                <label for="admin-product-create-demo-url">تصویر محصول</label>
+                                                <input id="admin-product-create-demo-url" class="form-control" type="file" name="demo_url">
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>سورس اصلی محصول</label>
-                                                <input class="form-control" type="file" name="source_url">
+                                                <label for="admin-product-create-source-url">سورس اصلی محصول</label>
+                                                <input id="admin-product-create-source-url" class="form-control" type="file" name="source_url">
                                             </div>
                                         </div>
 
                                     </div>
                                     <div class="form-group">
-                                        <label>توضیحات</label>
+                                        <label for="editor" id="product-description-label">توضیحات</label>
                                         <textarea name="description" id="editor">لطفا متن مورد نظر خودتان را وارد کنید</textarea>
                                     </div>
                                 </div>

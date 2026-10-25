@@ -368,6 +368,27 @@ ul {
 .ck-editor__editable {
     min-height: 200px !important;
 }
+
+.admin-order-items-dialog {
+    width: calc(100% - 2rem);
+    max-width: 800px;
+    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - 2rem);
+    margin: auto;
+    padding: 0;
+    border: 0;
+    border-radius: .3rem;
+    overflow: auto;
+    color: inherit;
+}
+
+.admin-order-items-dialog::backdrop {
+    background: rgba(0, 0, 0, .5);
+}
+
+.admin-order-items-dialog:not([open]) {
+    display: none;
+}
 .drawer{
     float: right;
     position: relative;

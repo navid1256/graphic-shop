@@ -33,26 +33,26 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>نام و نام خانوادگی</label>
-                                                <input type="text" class="form-control" name="name" placeholder="نام و نام خانوادگی را وارد کنید">
+                                                <label for="admin-user-create-name">نام و نام خانوادگی</label>
+                                                <input id="admin-user-create-name" type="text" class="form-control" name="name" placeholder="نام و نام خانوادگی را وارد کنید">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>ایمیل</label>
-                                                <input type="email" class="form-control" name="email" placeholder="ایمیل را وارد کنید">
+                                                <label for="admin-user-create-email">ایمیل</label>
+                                                <input id="admin-user-create-email" type="email" class="form-control" name="email" placeholder="ایمیل را وارد کنید">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>موبایل</label>
-                                                <input type="text" class="form-control" name="mobile" placeholder="موبایل را وارد کنید">
+                                                <label for="admin-user-create-mobile">موبایل</label>
+                                                <input id="admin-user-create-mobile" type="text" class="form-control" name="mobile" placeholder="موبایل را وارد کنید">
                                             </div>
                                         </div>
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>نقش کاربری</label>
-                                                <select class="form-control" name="role">
+                                                <label for="admin-user-create-role">نقش کاربری</label>
+                                                <select id="admin-user-create-role" class="form-control" name="role">
                                                     <option value="0" disabled selected>انتخاب نقش</option>
                                                     <option value="user">کاربر عادی</option>
                                                     {{-- <option value="2">طراح و فروشنده</option> --}}

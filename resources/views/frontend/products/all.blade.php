@@ -45,7 +45,8 @@
                             <i class="zmdi zmdi-search"></i>
                         </button>
 
-                        <input class="mtext-107 cl2 size-114 plh2 p-r-15" type="search" name="search" value="{{ $search }}" placeholder="متن خود را اینجا بنویسید و enter بزنید ...">
+                        <label for="catalog-product-search" class="visually-hidden">جستجو در محصولات</label>
+                        <input id="catalog-product-search" class="mtext-107 cl2 size-114 plh2 p-r-15" type="search" name="search" value="{{ $search }}" placeholder="متن خود را اینجا بنویسید و enter بزنید ...">
                     </form>
                 </div>
 
