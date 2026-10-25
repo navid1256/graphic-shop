@@ -45,7 +45,8 @@
                             <i class="zmdi zmdi-search"></i>
                         </button>
 
-                        <input class="mtext-107 cl2 size-114 plh2 p-r-15" type="search" name="search" value="{{ $search }}" placeholder="متن خود را اینجا بنویسید و enter بزنید ...">
+                        <label for="catalog-product-search" class="visually-hidden">جستجو در محصولات</label>
+                        <input id="catalog-product-search" class="mtext-107 cl2 size-114 plh2 p-r-15" type="search" name="search" value="{{ $search }}" placeholder="متن خود را اینجا بنویسید و enter بزنید ...">
                     </form>
                 </div>
 
@@ -176,6 +177,10 @@
                     <div class="col-sm-6 col-md-4 col-lg-3 p-b-35 isotope-item isotope-item{{ $product->category_id }}">
                         <div class="block2">
                             <div class="block2-pic hov-img0">
+                                @include('frontend.products.partials.wishlist-button', [
+                                    'wishlistProduct' => $product,
+                                    'wishlistImage' => $product->demo_url ? \Illuminate\Support\Facades\Storage::disk('product_images')->url($product->demo_url) : asset('images/product-01.jpg'),
+                                ])
                                 <a href="{{ route('frontend.products.show', $product->id) }}">
                                     @if ($product->demo_url)
                                         <img src="{{ \Illuminate\Support\Facades\Storage::disk('product_images')->url($product->demo_url) }}" alt="{{ $product->title }}">

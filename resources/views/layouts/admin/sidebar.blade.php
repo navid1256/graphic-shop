@@ -1,4 +1,8 @@
 <aside class="main-sidebar sidebar-dark-primary">
+    <a href="{{ url('/admin') }}" class="admin-brand" aria-label="Graphic Shop، پنل مدیریت">
+        <span class="admin-brand-full" aria-hidden="true"><img src="{{ asset('images/icons/Chrome Graphic Shop.png') }}" alt="" width="1086" height="1448"></span>
+        <span class="admin-brand-mini" aria-hidden="true"><img src="{{ asset('images/icons/Chrome GS Monogram.png') }}" alt="" width="1086" height="1448"></span>
+    </a>
 
     <!-- Sidebar -->
     <div class="sidebar">
@@ -7,11 +11,6 @@
             <!-- Sidebar Menu -->
             <nav class="mt-2">
                 <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
-                    <li class="nav-item">
-                        <a href="{{ url('/admin') }}" class="nav-link text-center mb-4">
-                            <img src="{{ asset('images/icons/logo-01.png') }}" alt="لوگو" style="filter: brightness(0) invert(1);">
-                        </a>
-                    </li>
                     <li class="nav-item has-treeview">
                         <a href="#" class="nav-link active">
                             <i class="nav-icon fa fa-image"></i>

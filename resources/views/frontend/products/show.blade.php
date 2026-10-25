@@ -66,16 +66,14 @@
                         </p>
 
                         <!--  -->
-                        <div class="p-t-33">
-
-                            <div class="flex-w flex-r-m p-b-10">
-                                <form action="{{ route('frontend.basket.add', $product->id) }}" method="POST" class="flex-w flex-m respon6-next">
-                                    @csrf
-                                    <button type="submit" class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 p-lr-15 trans-04">
-                                        افزودن به سبد خرید
-                                    </button>
-                                </form>
-                            </div>
+                        <div class="product-purchase-actions p-t-33">
+                            <form action="{{ route('frontend.basket.add', $product->id) }}" method="POST" class="product-purchase-form">
+                                @csrf
+                                <button type="submit" class="flex-c-m stext-101 cl0 bg1 bor1 hov-btn1 p-lr-15 trans-04 product-add-to-cart">
+                                    افزودن به سبد خرید
+                                </button>
+                            </form>
+                            @include('frontend.products.partials.wishlist-button', ['wishlistProduct' => $product, 'wishlistImage' => $productImage, 'wishlistDetailed' => true])
                         </div>
                     </div>
                 </div>
@@ -163,6 +161,7 @@
                             <div class="item-slick2 p-l-15 p-r-15 p-t-15 p-b-15">
                                 <div class="block2">
                                     <div class="block2-pic hov-img0">
+                                        @include('frontend.products.partials.wishlist-button', ['wishlistProduct' => $similarProduct, 'wishlistImage' => $similarProductImage, 'wishlistDetailed' => false])
                                         <a href="{{ route('frontend.products.show', $similarProduct->id) }}">
                                             <img src="{{ $similarProductImage }}" alt="{{ $similarProduct->title }}">
                                         </a>

@@ -46,12 +46,7 @@
     var headerDesktop = $('.container-menu-desktop');
     var wrapMenu = $('.wrap-menu-desktop');
 
-    if($('.top-bar').length > 0) {
-        var posWrapHeader = $('.top-bar').height();
-    }
-    else {
-        var posWrapHeader = 0;
-    }
+    const posWrapHeader = $('.top-bar').length > 0 ? $('.top-bar').height() : 0;
     
 
     if($(window).scrollTop() > posWrapHeader) {
@@ -84,8 +79,8 @@
 
     var arrowMainMenu = $('.arrow-main-menu-m');
 
-    for(var i=0; i<arrowMainMenu.length; i++){
-        $(arrowMainMenu[i]).on('click', function(){
+    for (const arrow of arrowMainMenu.toArray()) {
+        $(arrow).on('click', function(){
             $(this).parent().find('.sub-menu-m').slideToggle();
             $(this).toggleClass('turn-arrow-main-menu-m');
         })
@@ -142,7 +137,7 @@
 
     // init Isotope
     $(window).on('load', function () {
-        var $grid = $topeContainer.each(function () {
+        $topeContainer.each(function () {
             $(this).isotope({
                 itemSelector: '.isotope-item',
                 layoutMode: 'fitRows',
@@ -159,8 +154,8 @@
 
     $(isotopeButton).each(function(){
         $(this).on('click', function(){
-            for(var i=0; i<isotopeButton.length; i++) {
-                $(isotopeButton[i]).removeClass('how-active1');
+            for (const button of isotopeButton.toArray()) {
+                $(button).removeClass('how-active1');
             }
 
             $(this).addClass('how-active1');
@@ -194,13 +189,28 @@
 
     /*==================================================================
     [ Cart ]*/
-    $('.js-show-cart').on('click',function(){
-        $('.js-panel-cart').addClass('show-header-cart');
-    });
-
-    $('.js-hide-cart').on('click',function(){
-        $('.js-panel-cart').removeClass('show-header-cart');
-    });
+    const cartDrawer = document.getElementById('header-basket');
+    if (cartDrawer) {
+        $('.js-show-cart').on('click', function () {
+            const wishlist = document.getElementById('header-wishlist');
+            if (wishlist?.open) wishlist.close();
+            if (!cartDrawer.open) cartDrawer.showModal();
+            document.body.classList.add('shop-drawer-open');
+            $('.js-show-cart').attr('aria-expanded', 'true');
+        });
+        $('.js-hide-cart').on('click', function () { cartDrawer.close(); });
+        cartDrawer.addEventListener('close', function () {
+            if (!document.getElementById('header-wishlist')?.open) document.body.classList.remove('shop-drawer-open');
+            $('.js-show-cart').attr('aria-expanded', 'false');
+        });
+        if (!('closedBy' in HTMLDialogElement.prototype)) {
+            cartDrawer.addEventListener('click', function (event) {
+                if (event.target !== cartDrawer) return;
+                const bounds = cartDrawer.getBoundingClientRect();
+                if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) cartDrawer.close();
+            });
+        }
+    }
 
     /*==================================================================
     [ Cart ]*/
@@ -234,15 +244,14 @@
 
         $(item).on('mouseenter', function(){
             var index = item.index(this);
-            var i = 0;
-            for(i=0; i<=index; i++) {
-                $(item[i]).removeClass('zmdi-star-outline');
-                $(item[i]).addClass('zmdi-star');
+            for (const ratingItem of item.slice(0, index + 1).toArray()) {
+                $(ratingItem).removeClass('zmdi-star-outline');
+                $(ratingItem).addClass('zmdi-star');
             }
 
-            for(var j=i; j<item.length; j++) {
-                $(item[j]).addClass('zmdi-star-outline');
-                $(item[j]).removeClass('zmdi-star');
+            for (const ratingItem of item.slice(index + 1).toArray()) {
+                $(ratingItem).addClass('zmdi-star-outline');
+                $(ratingItem).removeClass('zmdi-star');
             }
         });
 
@@ -253,15 +262,14 @@
         });
 
         $(this).on('mouseleave', function(){
-            var i = 0;
-            for(i=0; i<=rated; i++) {
-                $(item[i]).removeClass('zmdi-star-outline');
-                $(item[i]).addClass('zmdi-star');
+            for (const ratingItem of item.slice(0, rated + 1).toArray()) {
+                $(ratingItem).removeClass('zmdi-star-outline');
+                $(ratingItem).addClass('zmdi-star');
             }
 
-            for(var j=i; j<item.length; j++) {
-                $(item[j]).addClass('zmdi-star-outline');
-                $(item[j]).removeClass('zmdi-star');
+            for (const ratingItem of item.slice(rated + 1).toArray()) {
+                $(ratingItem).addClass('zmdi-star-outline');
+                $(ratingItem).removeClass('zmdi-star');
             }
         });
     });

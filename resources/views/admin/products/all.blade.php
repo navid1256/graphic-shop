@@ -29,7 +29,8 @@
                                 <h3 class="card-title">لیست محصولات</h3>
                                 <form action="{{ route('admin.products.all') }}" method="GET" class="card-tools">
                                     <div class="input-group input-group-sm" style="width: 180px;">
-                                        <input type="search" name="search" value="{{ $search }}" class="form-control float-right" placeholder="جستجو">
+                                        <label for="admin-products-search" class="sr-only">جستجو در محصولات</label>
+                                        <input id="admin-products-search" type="search" name="search" value="{{ $search }}" class="form-control float-right" placeholder="جستجو">
                                         <div class="input-group-append">
                                             <button type="submit" class="btn btn-default" aria-label="جستجو">
                                                 <i class="fa fa-search"></i>

@@ -34,14 +34,14 @@
                                     <div class="row">
                                         <div class="col-md-6">
                                             <div class="form-group">
-                                                <label>عنوان</label>
-                                                <input type="text" class="form-control" name="title" placeholder="نامک را وارد کنید" value="{{ $product->title }}">
+                                                <label for="admin-product-edit-title">عنوان</label>
+                                                <input id="admin-product-edit-title" type="text" class="form-control" name="title" placeholder="نامک را وارد کنید" value="{{ $product->title }}">
                                             </div>
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>دسته بندی</label>
-                                                <select class="form-control" name="category_id">
+                                                <label for="admin-product-edit-category-id">دسته بندی</label>
+                                                <select id="admin-product-edit-category-id" class="form-control" name="category_id">
                                                     <option value="" disabled @selected(old('category_id', $product->category_id) === null)>
                                                         انتخاب دسته‌بندی
                                                     </option>
@@ -55,16 +55,16 @@
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label>قیمت</label>
-                                                <input type="text" class="form-control" name="price" placeholder="قیمت را وارد کنید" value="{{ $product->price }}">
+                                                <label for="admin-product-edit-price">قیمت</label>
+                                                <input id="admin-product-edit-price" type="text" class="form-control" name="price" placeholder="قیمت را وارد کنید" value="{{ $product->price }}">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>تصویر شاخص</label>
-                                                <input class="form-control" type="file" name="thumbnail_url">
+                                                <label for="admin-product-edit-thumbnail-url">تصویر شاخص</label>
+                                                <input id="admin-product-edit-thumbnail-url" class="form-control" type="file" name="thumbnail_url">
                                             </div>
                                             @if ($product->thumbnail_url)
                                                 <img src="{{ \Illuminate\Support\Facades\Storage::disk('product_images')->url($product->thumbnail_url) }}" alt="تصویر محصول" width="100" height="100">
@@ -72,8 +72,8 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>تصویر محصول</label>
-                                                <input class="form-control" type="file" name="demo_url">
+                                                <label for="admin-product-edit-demo-url">تصویر محصول</label>
+                                                <input id="admin-product-edit-demo-url" class="form-control" type="file" name="demo_url">
                                             </div>
                                             @if ($product->demo_url)
                                                 <img src="{{ \Illuminate\Support\Facades\Storage::disk('product_images')->url($product->demo_url) }}" alt="تصویر محصول" width="100" height="100">
@@ -81,8 +81,8 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label>سورس اصلی محصول</label>
-                                                <input class="form-control" type="file" name="source_url">
+                                                <label for="admin-product-edit-source-url">سورس اصلی محصول</label>
+                                                <input id="admin-product-edit-source-url" class="form-control" type="file" name="source_url">
                                             </div>
                                             @if ($product->source_url)
                                                 <img src="{{ \Illuminate\Support\Facades\Storage::disk('product_images')->url($product->source_url) }}" alt="تصویر محصول" width="100" height="100">
@@ -92,7 +92,7 @@
 
                                     </div>
                                     <div class="form-group">
-                                        <label>توضیحات</label>
+                                        <label for="editor" id="product-description-label">توضیحات</label>
                                         <textarea name="description" id="editor">{{ $product->description }} </textarea>
                                     </div>
                                 </div>

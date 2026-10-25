@@ -32,10 +32,11 @@
 
                                 <div class="card-tools">
                                     <div class="input-group input-group-sm" style="width: 150px;">
-                                        <input type="text" name="table_search" class="form-control float-right" placeholder="جستجو">
+                                        <label for="admin-users-search" class="sr-only">جستجو در کاربران</label>
+                                        <input id="admin-users-search" type="text" name="table_search" class="form-control float-right" placeholder="جستجو">
 
                                         <div class="input-group-append">
-                                            <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                                            <button type="submit" class="btn btn-default" aria-label="جستجو"><i class="fa fa-search" aria-hidden="true"></i></button>
                                         </div>
                                     </div>
                                 </div>

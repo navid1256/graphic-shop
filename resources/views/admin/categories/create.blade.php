@@ -34,8 +34,8 @@
                                       <div class="row">
                                           <div class="col-md-6">
                                               <div class="form-group">
-                                                  <label>نامک</label>
-                                                  <input type="text" class="form-control" name="slug" placeholder="نامک را وارد کنید">
+                                                  <label for="admin-category-create-slug">نامک</label>
+                                                  <input id="admin-category-create-slug" type="text" class="form-control" name="slug" placeholder="نامک را وارد کنید">
                                                   @error('slug')
                                                       <div class="text-danger">{{ $message }}</div>
                                                   @enderror
@@ -43,8 +43,8 @@
                                           </div>
                                           <div class="col-md-6">
                                               <div class="form-group">
-                                                  <label>عنوان</label>
-                                                  <input type="text" class="form-control" name="title" placeholder="عنوان را وارد کنید">
+                                                  <label for="admin-category-create-title">عنوان</label>
+                                                  <input id="admin-category-create-title" type="text" class="form-control" name="title" placeholder="عنوان را وارد کنید">
                                                   @error('title')
                                                       <div class="text-danger">{{ $message }}</div>
                                                   @enderror

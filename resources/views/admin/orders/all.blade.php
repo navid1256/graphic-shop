@@ -9,7 +9,7 @@
                 <div class="row mb-2 mt-4">
                     <div class="col-12">
                         <h1 class="m-0 text-dark">
-                            <a class="nav-link drawer" data-widget="pushmenu" href="#"><i class="fa fa-bars"></i></a>
+                            <a class="nav-link drawer" data-widget="pushmenu" href="#" aria-label="باز و بسته کردن منوی مدیریت"><i class="fa fa-bars" aria-hidden="true"></i></a>
                             سفارشات
                         </h1>
                     </div><!-- /.col -->
@@ -29,10 +29,11 @@
 
                                 <div class="card-tools">
                                     <div class="input-group input-group-sm" style="width: 150px;">
-                                        <input type="text" name="table_search" class="form-control float-right" placeholder="جستجو">
+                                        <label for="admin-orders-search" class="sr-only">جستجو در سفارش‌ها</label>
+                                        <input id="admin-orders-search" type="text" name="table_search" class="form-control float-right" placeholder="جستجو">
 
                                         <div class="input-group-append">
-                                            <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
+                                            <button type="submit" class="btn btn-default" aria-label="جستجو"><i class="fa fa-search" aria-hidden="true"></i></button>
                                         </div>
                                     </div>
                                 </div>
@@ -62,7 +63,7 @@
                                                 </td>
                                                 <td>{{ $order->created_at->format('Y-m-d') }}</td>
                                                 <td>
-                                                    <button class="btn btn-default btn-icons" data-toggle="modal" data-target="#order_items" title="مشاهده سبد خرید"><i class="fa fa-shopping-cart"></i></button>
+                                                    <button type="button" class="btn btn-default btn-icons" data-open-order-items aria-controls="order_items" aria-haspopup="dialog" aria-label="مشاهده اقلام سفارش {{ $order->ref_code ?: $order->id }}" title="مشاهده سبد خرید"><i class="fa fa-shopping-cart" aria-hidden="true"></i></button>
                                                 </td>
                                             </tr>
                                         @endforeach
@@ -88,15 +89,12 @@
     </div>
     <!-- /.content-wrapper -->
 
-    <!-- Modal -->
-
-    <!-- Modal -->
-    <div class="modal fade" id="order_items" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
+    <dialog class="admin-order-items-dialog" id="order_items" aria-labelledby="order-items-title" closedby="any">
+        <div class="admin-order-items-content">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLabel">آیتم های سبد خرید</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <h5 class="modal-title" id="order-items-title">آیتم‌های سبد خرید</h5>
+                    <button type="button" class="close" data-close-order-items aria-label="بستن جزئیات سفارش" autofocus>
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
@@ -113,7 +111,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <img src="dist/img/user6-128x128.jpg" class="product_img">
+                                        <img src="{{ asset('admin/dist/img/user6-128x128.jpg') }}" class="product_img" alt="تصویر نمونهٔ محصول">
                                         کارت ویزیت مشاور املاک
                                     </td>
                                     <td>کارت ویزیت</td>
@@ -127,7 +125,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <img src="dist/img/user6-128x128.jpg" class="product_img">
+                                        <img src="{{ asset('admin/dist/img/user6-128x128.jpg') }}" class="product_img" alt="تصویر نمونهٔ محصول">
                                         کارت ویزیت مشاور املاک
                                     </td>
                                     <td>کارت ویزیت</td>
@@ -141,7 +139,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <img src="dist/img/user6-128x128.jpg" class="product_img">
+                                        <img src="{{ asset('admin/dist/img/user6-128x128.jpg') }}" class="product_img" alt="تصویر نمونهٔ محصول">
                                         کارت ویزیت مشاور املاک
                                     </td>
                                     <td>کارت ویزیت</td>
@@ -155,7 +153,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        <img src="dist/img/user6-128x128.jpg" class="product_img">
+                                        <img src="{{ asset('admin/dist/img/user6-128x128.jpg') }}" class="product_img" alt="تصویر نمونهٔ محصول">
                                         کارت ویزیت مشاور املاک
                                     </td>
                                     <td>کارت ویزیت</td>
@@ -172,11 +170,11 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">بستن</button>
+                    <button type="button" class="btn btn-secondary" data-close-order-items>بستن</button>
                 </div>
             </div>
         </div>
-    </div>
+    </dialog>
 
-    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="{{ asset('admin/js/order-items-dialog.js') }}" defer></script>
 @endsection

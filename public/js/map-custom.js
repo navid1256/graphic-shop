@@ -217,8 +217,9 @@
                     , latitude, longitude, 2]
             ];
 
+            let map;
             if (selector_map !== undefined) {
-                var map = new google.maps.Map(document.getElementById('google_map'), {
+                map = new google.maps.Map(document.getElementById('google_map'), {
                     zoom: Number(map_zoom),
                     zoomControl: false,  
                     disableDoubleClickZoom: true,
@@ -235,22 +236,17 @@
 
             var infowindow = new google.maps.InfoWindow();
 
-            var marker, i;
-
-            for (i = 0; i < locations.length; i++) {
-
-                marker = new google.maps.Marker({
-                    position: new google.maps.LatLng(locations[i][1], locations[i][2]),
+            for (const location of locations) {
+                const marker = new google.maps.Marker({
+                    position: new google.maps.LatLng(location[1], location[2]),
                     map: map,
                     icon: img_pin
                 });
 
-                google.maps.event.addListener(marker, 'click', (function(marker, i) {
-                    return function() {
-                        infowindow.setContent(locations[i][0]);
-                        infowindow.open(map, marker);
-                    }
-                })(marker, i));
+                google.maps.event.addListener(marker, 'click', function() {
+                    infowindow.setContent(location[0]);
+                    infowindow.open(map, marker);
+                });
             }
 
         });
