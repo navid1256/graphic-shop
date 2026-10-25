@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "53b5d56b3b7e3cbac1713e68c8850f6c",
+    "content-hash": "7b13b228c60ed60b034271d95987949f",
     "packages": [
         {
             "name": "brick/math",
@@ -3303,6 +3303,53 @@
                 "source": "https://github.com/ramsey/uuid/tree/4.9.4"
             },
             "time": "2026-09-16T11:39:30+00:00"
+        },
+        {
+            "name": "sadegh19b/laravel-persian-lang",
+            "version": "v2.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/sadegh19b/laravel-persian-lang.git",
+                "reference": "1aac759ee60a4109f63a4ec83aa95f56188993d9"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/sadegh19b/laravel-persian-lang/zipball/1aac759ee60a4109f63a4ec83aa95f56188993d9",
+                "reference": "1aac759ee60a4109f63a4ec83aa95f56188993d9",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^6.0|^7.0|^8.0|^9.0|^10.0|^11.0|^12.0|^13.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Sadegh19b\\PersianLang\\PersianLangServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Sadegh19b\\PersianLang\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Sadegh Barzegar",
+                    "email": "sadegh19b@gmail.com"
+                }
+            ],
+            "description": "Persian language files for Laravel",
+            "support": {
+                "issues": "https://github.com/sadegh19b/laravel-persian-lang/issues",
+                "source": "https://github.com/sadegh19b/laravel-persian-lang/tree/v2.2.0"
+            },
+            "time": "2026-05-30T06:33:39+00:00"
         },
         {
             "name": "symfony/clock",

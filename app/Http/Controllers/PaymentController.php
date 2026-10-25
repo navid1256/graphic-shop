@@ -1,0 +1,181 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Mail\SendOrderImages;
+use App\Models\Product;
+use App\Services\Payment\Exceptions\PaymentException;
+use App\Services\Payment\Requests\PaymentRequest;
+use App\Services\Payment\Results\PaymentVerification;
+use App\Services\PaymentService;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
+use InvalidArgumentException;
+
+class PaymentController extends Controller
+{
+    public function pay(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'family' => ['required', 'string', 'max:120'],
+            'mobile' => ['required', 'string', 'regex:/^09[0-9]{9}$/'],
+            'email' => ['required', 'email', 'max:254'],
+            'provider' => ['sometimes', Rule::in([PaymentService::ZIBAL, PaymentService::ZARINPAL])],
+        ]);
+
+        $basket = json_decode($request->cookie('basket', '[]'), true);
+        $productIds = is_array($basket) ? array_keys($basket) : [];
+        $products = Product::whereIn('id', $productIds)->get(['id', 'price']);
+        $totalTomans = $products->sum('price');
+
+        if ($products->isEmpty() || $totalTomans <= 0 || $totalTomans > intdiv(PHP_INT_MAX, 10)) {
+            return redirect()->route('frontend.checkout')
+                ->withErrors(['payment' => 'سبد خرید خالی است یا مبلغ آن معتبر نیست.']);
+        }
+
+        $paymentId = (string) Str::uuid();
+        $payment = [
+            'provider' => $data['provider'] ?? config('payments.default', PaymentService::ZIBAL),
+            'order_id' => $paymentId,
+            'amount_rials' => (int) $totalTomans * 10,
+            'callback_url' => route('frontend.payment.callback', ['payment' => $paymentId]),
+            'description' => 'پرداخت سبد خرید برای ' . $data['family'],
+            'family' => $data['family'],
+            'mobile' => $data['mobile'],
+            'email' => $data['email'] ?? null,
+            'product_ids' => $products->modelKeys(),
+            'status' => 'pending',
+        ];
+
+        try {
+            $result = $this->paymentService($payment)->pay();
+        } catch (PaymentException | InvalidArgumentException $exception) {
+            report($exception);
+
+            return redirect()->route('frontend.checkout')->withInput()
+                ->withErrors(['payment' => 'ارتباط با درگاه پرداخت برقرار نشد. دوباره تلاش کنید.']);
+        }
+
+        $payment['transaction_id'] = $result->transactionId;
+        $request->session()->put('payments.' . $paymentId, $payment);
+
+        return redirect()->away($result->redirectUrl);
+    }
+
+    public function callback(Request $request, string $payment): RedirectResponse
+    {
+        $storedPayment = $request->session()->get('payments.' . $payment);
+
+        if (! is_array($storedPayment)) {
+            return redirect()->route('frontend.payment.failed')
+                ->withErrors(['payment' => 'اطلاعات پرداخت پیدا نشد یا نشست شما منقضی شده است.']);
+        }
+
+        if ($storedPayment['status'] === PaymentVerification::VERIFIED) {
+            return redirect()->route('frontend.payment.success', ['payment' => $payment])
+                ->withCookie(Cookie::forget('basket'));
+        }
+
+        $validator = Validator::make($request->query(), [
+            'trackId' => ['sometimes', 'string', 'regex:/^[0-9]+$/', 'max:128'],
+            'success' => ['sometimes', Rule::in(['0', '1'])],
+            'Authority' => ['sometimes', 'string', 'max:128'],
+            'Status' => ['sometimes', 'string', 'max:20'],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->route('frontend.payment.failed')
+                ->withErrors(['payment' => 'اطلاعات بازگشتی درگاه معتبر نیست.']);
+        }
+
+        $callback = $validator->validated();
+
+        try {
+            $verification = $this->paymentService($storedPayment)->verifyCallback(
+                $callback,
+                $storedPayment['transaction_id'],
+            );
+        } catch (PaymentException | InvalidArgumentException $exception) {
+            report($exception);
+
+            return redirect()->route('frontend.payment.failed')
+                ->withErrors(['payment' => 'تأیید پرداخت انجام نشد. در صورت کسر وجه، پیش از پرداخت مجدد وضعیت را پیگیری کنید.']);
+        }
+
+        $reconciledZibalPayment = $verification->provider === PaymentService::ZIBAL
+            && $verification->status === PaymentVerification::ALREADY_VERIFIED
+            && $verification->paidAmountRials === $storedPayment['amount_rials'];
+
+        if (! $verification->isNewlyVerified() && ! $reconciledZibalPayment) {
+            return redirect()->route('frontend.payment.failed')->withErrors([
+                'payment' => $verification->status === PaymentVerification::ALREADY_VERIFIED
+                    ? 'این تراکنش قبلاً در درگاه تأیید شده است؛ وضعیت آن نیاز به پیگیری دارد.'
+                    : 'پرداخت لغو شد یا ناموفق بود.',
+            ]);
+        }
+
+        $storedPayment['status'] = PaymentVerification::VERIFIED;
+        $storedPayment['reference_id'] = $verification->referenceId;
+        $request->session()->put('payments.' . $payment, $storedPayment);
+
+        return redirect()->route('frontend.payment.success', ['payment' => $payment])
+            ->withCookie(Cookie::forget('basket'));
+    }
+
+    public function success(Request $request, string $payment): View|RedirectResponse
+    {
+        $paymentInfo = $request->session()->get('payments.' . $payment);
+
+        if (! is_array($paymentInfo) || ($paymentInfo['status'] ?? null) !== PaymentVerification::VERIFIED) {
+            return redirect()->route('frontend.payment.failed')
+                ->withErrors(['payment' => 'پرداخت تأییدشده‌ای برای این درخواست پیدا نشد.']);
+        }
+
+        $emailDeliveryError = null;
+
+        if (empty($paymentInfo['source_email_sent'])) {
+            $products = Product::whereIn('id', $paymentInfo['product_ids'])->get(['source_url']);
+            $sourceFiles = $products->pluck('source_url')->filter()->values();
+            $allSourcesAvailable = $products->count() === count($paymentInfo['product_ids'])
+                && $sourceFiles->count() === $products->count()
+                && $sourceFiles->every(
+                    fn (string $path): bool => Storage::disk('product_images')->exists($path)
+                );
+
+            if (! $allSourcesAvailable) {
+                $emailDeliveryError = 'پرداخت با موفقیت انجام شد، اما ارسال فایل‌ها انجام نشد. لطفاً با پشتیبانی تماس بگیرید.';
+                report(new \RuntimeException(
+                    'A purchased product source file is missing; order source email was not sent.'
+                ));
+            } else {
+                Mail::to($paymentInfo['email'])->send(
+                    new SendOrderImages($sourceFiles->all(), $paymentInfo['family'])
+                );
+
+                $paymentInfo['source_email_sent'] = true;
+                $request->session()->put('payments.'.$payment, $paymentInfo);
+            }
+        }
+
+        return view('frontend.checkout.callback-s', compact('paymentInfo', 'emailDeliveryError'));
+    }
+
+    private function paymentService(array $payment): PaymentService
+    {
+        return new PaymentService($payment['provider'], new PaymentRequest(
+            orderId: $payment['order_id'],
+            amountRials: $payment['amount_rials'],
+            callbackUrl: $payment['callback_url'],
+            description: $payment['description'],
+            mobile: $payment['mobile'],
+            email: $payment['email'],
+        ));
+    }
+}
