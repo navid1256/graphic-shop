@@ -137,7 +137,7 @@
 
     // init Isotope
     $(window).on('load', function () {
-        var $grid = $topeContainer.each(function () {
+        $topeContainer.each(function () {
             $(this).isotope({
                 itemSelector: '.isotope-item',
                 layoutMode: 'fitRows',
@@ -193,7 +193,7 @@
     if (cartDrawer) {
         $('.js-show-cart').on('click', function () {
             const wishlist = document.getElementById('header-wishlist');
-            if (wishlist && wishlist.open) wishlist.close();
+            if (wishlist?.open) wishlist.close();
             if (!cartDrawer.open) cartDrawer.showModal();
             document.body.classList.add('shop-drawer-open');
             $('.js-show-cart').attr('aria-expanded', 'true');
